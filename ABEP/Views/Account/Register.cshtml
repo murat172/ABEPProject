@@ -1,0 +1,149 @@
+@model ABEP.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Kayıt Ol";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kayıt Ol – ABEP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg: #0d0f14;
+            --card: #161a22;
+            --border: #252b36;
+            --accent: #e63946;
+            --text: #e8eaf0;
+            --muted: #6b7280;
+            --input-bg: #1e2330;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+        .auth-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            width: 100%;
+            max-width: 440px;
+        }
+        .auth-logo {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--accent);
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: .25rem;
+        }
+        .auth-subtitle {
+            text-align: center;
+            color: var(--muted);
+            font-size: .85rem;
+            margin-bottom: 2rem;
+        }
+        .form-label { color: var(--muted); font-size: .82rem; margin-bottom: .35rem; }
+        .form-control {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 8px;
+            padding: .65rem 1rem;
+        }
+        .form-control:focus {
+            background: var(--input-bg);
+            border-color: var(--accent);
+            color: var(--text);
+            box-shadow: 0 0 0 3px rgba(230,57,70,.15);
+        }
+        .btn-auth {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: .75rem;
+            width: 100%;
+            font-weight: 600;
+            font-size: .95rem;
+            cursor: pointer;
+            transition: opacity .2s;
+            margin-top: .5rem;
+        }
+        .btn-auth:hover { opacity: .88; }
+        .auth-link {
+            text-align: center;
+            margin-top: 1.25rem;
+            font-size: .85rem;
+            color: var(--muted);
+        }
+        .auth-link a { color: var(--accent); text-decoration: none; }
+        .auth-link a:hover { text-decoration: underline; }
+        .text-danger { font-size: .8rem; }
+        .validation-summary-errors ul { list-style: none; padding: 0; }
+        .validation-summary-errors li {
+            background: rgba(230,57,70,.1);
+            border: 1px solid rgba(230,57,70,.3);
+            border-radius: 6px;
+            padding: .5rem .75rem;
+            margin-bottom: .5rem;
+            font-size: .82rem;
+            color: #ff8a8a;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <div class="auth-logo">ABEP</div>
+        <div class="auth-subtitle">Yeni Hesap Oluştur</div>
+
+        <div asp-validation-summary="All" class="validation-summary-errors"></div>
+
+        <form asp-action="Register" asp-controller="Account" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label asp-for="FullName" class="form-label">Ad Soyad</label>
+                <input asp-for="FullName" class="form-control" placeholder="Ahmet Yılmaz" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label">E-posta</label>
+                <input asp-for="Email" class="form-control" placeholder="ornek@mail.com" autocomplete="email" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label">Şifre</label>
+                <input asp-for="Password" class="form-control" placeholder="En az 6 karakter" autocomplete="new-password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="ConfirmPassword" class="form-label">Şifre Onayı</label>
+                <input asp-for="ConfirmPassword" class="form-control" placeholder="Şifreyi tekrar girin" autocomplete="new-password" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn-auth"><i class="bi bi-person-plus-fill"></i> Kayıt Ol</button>
+        </form>
+
+        <div class="auth-link">
+            Zaten hesabın var mı? <a asp-action="Login" asp-controller="Account">Giriş Yap</a>
+        </div>
+    </div>
+
+    @section Scripts {
+        @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    }
+</body>
+</html>

@@ -1,0 +1,441 @@
+@model ABEP.Models.DisasterDetailsViewModel
+@using System.Text.Json
+@{
+    var d = Model.Disaster;
+    ViewData["Title"] = d.Name + " – AfetBilinç";
+
+    string RiskBadgeClass(string level) => level switch
+    {
+        "critical" => "risk-critical",
+        "high"     => "risk-high",
+        "medium"   => "risk-medium",
+        "low"      => "risk-low",
+        _          => "risk-medium"
+    };
+
+    string RiskLabel(string level) => level switch
+    {
+        "critical" => "KRİTİK RİSK SEVİYESİ",
+        "high"     => "YÜKSEK RİSK",
+        "medium"   => "ORTA RİSK",
+        "low"      => "DÜŞÜK RİSK",
+        _          => level.ToUpper()
+    };
+
+    List<string> ParseList(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return new();
+        try { return JsonSerializer.Deserialize<List<string>>(json) ?? new(); }
+        catch { return new(); }
+    }
+
+    var beforeItems  = ParseList(d.BeforeChecklist);
+    var afterItems   = ParseList(d.AfterChecklist);
+    var phase1Items  = ParseList(d.DuringPhase1Items);
+    var phase2Items  = ParseList(d.DuringPhase2Items);
+    var phase3Items  = ParseList(d.DuringPhase3Items);
+
+    bool hasVideo = !string.IsNullOrWhiteSpace(d.VideoUrl) || !string.IsNullOrWhiteSpace(d.VideoThumbnailUrl);
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@ViewData["Title"]</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Barlow+Condensed:wght@500;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+  <style>
+    :root { --red:#C0392B; --red-dk:#922B21; --amber:#D35400; --dark:#0D0D0D; --mid:#1A1A1A; --surface:#242424; --border:rgba(255,255,255,.07); --muted:#888; --light:#F5F1EC; --accent:#E74C3C; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--dark); color: var(--light); font-family: 'Barlow', sans-serif; font-weight: 300; overflow-x: hidden; }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events:none; z-index:0; opacity:.4; }
+
+    .navbar { background:rgba(13,13,13,.95); border-bottom:1px solid rgba(192,57,43,.25); padding:1rem 0; position:sticky; top:0; z-index:1000; backdrop-filter:blur(8px); }
+    .navbar-brand { font-family:'Bebas Neue',sans-serif; font-size:1.9rem; letter-spacing:2px; color:var(--light)!important; }
+    .navbar-brand span { color:var(--accent); }
+    .nav-link { color:rgba(245,241,236,.7)!important; font-size:.85rem; font-weight:500; letter-spacing:1.5px; text-transform:uppercase; transition:color .2s; padding:.4rem .8rem!important; }
+    .nav-link:hover,.nav-link.active { color:var(--accent)!important; }
+
+    .detail-hero { position:relative; height:65vh; min-height:420px; display:flex; align-items:flex-end; overflow:hidden; }
+    .detail-hero-bg { position:absolute; inset:0; background: linear-gradient(0deg,var(--dark) 0%,rgba(13,13,13,.6) 40%,rgba(13,13,13,.2) 100%), url('@d.HeroImageUrl') center/cover no-repeat; }
+    .detail-hero-content { position:relative; z-index:2; padding-bottom:3.5rem; width:100%; }
+
+    .breadcrumb-custom { display:flex; align-items:center; gap:.5rem; font-size:.75rem; font-weight:500; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:1.25rem; }
+    .breadcrumb-custom a { color:var(--muted); text-decoration:none; transition:color .2s; }
+    .breadcrumb-custom a:hover { color:var(--accent); }
+    .breadcrumb-custom .sep { color:rgba(255,255,255,.2); }
+    .breadcrumb-custom .current { color:rgba(245,241,236,.6); }
+
+    .risk-badge { display:inline-flex; align-items:center; gap:.4rem; font-family:'Barlow Condensed',sans-serif; font-size:.72rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; padding:.3rem .8rem; border-radius:2px; margin-bottom:1rem; }
+    .risk-critical { background:rgba(192,57,43,.25); color:#E74C3C; border:1px solid rgba(192,57,43,.4); }
+    .risk-high     { background:rgba(211,84,0,.25);  color:#E67E22; border:1px solid rgba(211,84,0,.4); }
+    .risk-medium   { background:rgba(241,196,15,.2); color:#F1C40F; border:1px solid rgba(241,196,15,.3); }
+    .risk-low      { background:rgba(39,174,96,.2);  color:#2ECC71; border:1px solid rgba(39,174,96,.3); }
+
+    .detail-hero h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(3.5rem,8vw,6.5rem); letter-spacing:3px; line-height:.95; margin-bottom:1rem; }
+
+    .content-nav { background:var(--surface); border-bottom:1px solid var(--border); padding:0; z-index:98; }
+    .content-nav-inner { display:flex; overflow-x:auto; scrollbar-width:none; }
+    .content-nav-inner::-webkit-scrollbar { display:none; }
+    .content-nav a { display:block; padding:.85rem 1.25rem; font-family:'Barlow Condensed',sans-serif; font-size:.8rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); text-decoration:none; border-bottom:2px solid transparent; white-space:nowrap; transition:color .2s,border-color .2s; }
+    .content-nav a:hover { color:var(--light); }
+    .content-nav a.active { color:var(--accent); border-bottom-color:var(--accent); }
+
+    .detail-layout { display:grid; grid-template-columns:1fr 300px; gap:3rem; padding:4rem 0; align-items:start; }
+    .main-content section { margin-bottom:4rem; scroll-margin-top:130px; }
+
+    .section-label { font-family:'Barlow Condensed',sans-serif; font-size:.72rem; font-weight:700; letter-spacing:4px; text-transform:uppercase; color:var(--accent); margin-bottom:.6rem; }
+    .section-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(1.8rem,4vw,2.8rem); letter-spacing:1.5px; line-height:1; margin-bottom:1.25rem; }
+    .lead-text { font-size:1.05rem; line-height:1.8; color:rgba(245,241,236,.8); margin-bottom:1.25rem; }
+    .body-text { font-size:.92rem; line-height:1.8; color:rgba(245,241,236,.55); margin-bottom:1rem; }
+
+    .callout { border-left:3px solid var(--accent); background:rgba(231,76,60,.07); padding:1.25rem 1.5rem; border-radius:0 3px 3px 0; margin:1.75rem 0; }
+    .callout-label { font-family:'Barlow Condensed',sans-serif; font-size:.72rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:var(--accent); margin-bottom:.5rem; }
+    .callout p { font-size:.9rem; color:rgba(245,241,236,.75); line-height:1.7; margin:0; }
+
+    .checklist { list-style:none; padding:0; margin:0; }
+    .checklist li { display:flex; gap:1rem; align-items:flex-start; padding:.9rem 0; border-bottom:1px solid var(--border); font-size:.9rem; color:rgba(245,241,236,.75); line-height:1.6; cursor:pointer; transition:color .2s; }
+    .checklist li:last-child { border-bottom:none; }
+    .checklist li:hover { color:var(--light); }
+    .check-box { width:20px; height:20px; border:1.5px solid rgba(231,76,60,.5); border-radius:2px; flex-shrink:0; margin-top:2px; display:flex; align-items:center; justify-content:center; transition:background .2s,border-color .2s; }
+    .check-box.done { background:var(--red); border-color:var(--red); }
+    .check-box.done::after { content:''; width:10px; height:6px; border-left:2px solid #fff; border-bottom:2px solid #fff; transform:rotate(-45deg) translateY(-1px); }
+    .checklist li.done-item { color:var(--muted); text-decoration:line-through; }
+
+    .phase-row { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin:1.5rem 0; }
+    .phase-card { background:var(--surface); border:1px solid var(--border); border-radius:3px; padding:1.5rem 1.25rem; }
+    .phase-card.before { border-top:3px solid #E67E22; }
+    .phase-card.during { border-top:3px solid var(--accent); }
+    .phase-card.after  { border-top:3px solid #2ECC71; }
+    .phase-label { font-family:'Barlow Condensed',sans-serif; font-size:.7rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin-bottom:.6rem; }
+    .phase-card.before .phase-label { color:#E67E22; }
+    .phase-card.during .phase-label { color:var(--accent); }
+    .phase-card.after  .phase-label { color:#2ECC71; }
+    .phase-card h5 { font-family:'Barlow Condensed',sans-serif; font-size:1.1rem; font-weight:700; margin-bottom:.75rem; }
+    .phase-list { list-style:none; padding:0; margin:0; }
+    .phase-list li { font-size:.82rem; color:rgba(245,241,236,.55); line-height:1.6; padding:.3rem 0 .3rem .9rem; position:relative; }
+    .phase-list li::before { content:'–'; position:absolute; left:0; color:var(--muted); }
+
+    /* Büyüklük skalası tablosu — STATIK, stil gerekli */
+    .mag-table { width:100%; border-collapse:collapse; font-size:.88rem; }
+    .mag-table th { font-family:'Barlow Condensed',sans-serif; font-size:.75rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); padding:.75rem 1rem; text-align:left; border-bottom:1px solid rgba(255,255,255,.12); }
+    .mag-table td { padding:.85rem 1rem; border-bottom:1px solid var(--border); color:rgba(245,241,236,.7); vertical-align:middle; }
+    .mag-table tr:last-child td { border-bottom:none; }
+    .mag-table tr:hover td { background:rgba(255,255,255,.02); }
+    .mag-badge { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:1px; }
+    .mag-1 { color:#2ECC71; } .mag-2 { color:#F1C40F; } .mag-3 { color:#E67E22; } .mag-4 { color:var(--accent); } .mag-5 { color:#C0392B; }
+    .severity-bar { height:5px; border-radius:2px; background:rgba(255,255,255,.1); overflow:hidden; width:120px; }
+    .severity-fill { height:100%; border-radius:2px; }
+
+    .video-placeholder { background:var(--surface); border:1px solid var(--border); border-radius:3px; aspect-ratio:16/9; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1rem; position:relative; overflow:hidden; transition:border-color .2s; }
+    .video-placeholder.has-link { cursor:pointer; }
+    .video-placeholder.has-link:hover { border-color:rgba(231,76,60,.4); }
+    .video-placeholder img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:grayscale(.4) brightness(.5); }
+    .play-btn { position:relative; z-index:1; width:64px; height:64px; border-radius:50%; background:rgba(192,57,43,.9); display:flex; align-items:center; justify-content:center; font-size:1.5rem; color:#fff; transition:transform .2s,background .2s; }
+    .video-placeholder.has-link:hover .play-btn { transform:scale(1.1); background:var(--red); }
+    .video-caption { position:relative; z-index:1; font-family:'Barlow Condensed',sans-serif; font-size:.85rem; font-weight:700; letter-spacing:1px; color:rgba(245,241,236,.8); }
+
+    .sidebar { position:sticky; top:130px; }
+    .sidebar-card { background:var(--surface); border:1px solid var(--border); border-radius:3px; padding:1.5rem; margin-bottom:1.25rem; }
+    .sidebar-heading { font-family:'Barlow Condensed',sans-serif; font-size:.75rem; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--accent); margin-bottom:1.1rem; padding-bottom:.75rem; border-bottom:1px solid var(--border); }
+
+    .related-item { display:flex; gap:.85rem; align-items:flex-start; padding:.75rem 0; border-bottom:1px solid var(--border); text-decoration:none; color:inherit; transition:color .2s; }
+    .related-item:last-child { border-bottom:none; }
+    .related-item:hover { color:var(--accent); }
+    .related-icon { width:36px; height:36px; background:rgba(231,76,60,.1); border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:.95rem; color:var(--accent); flex-shrink:0; }
+    .related-name { font-family:'Barlow Condensed',sans-serif; font-size:.95rem; font-weight:700; letter-spacing:.5px; }
+    .related-risk { font-size:.72rem; color:var(--muted); margin-top:.1rem; }
+
+    .sec-divider { display:flex; align-items:center; gap:1rem; margin:2.5rem 0 2rem; }
+    .sec-divider-label { font-family:'Barlow Condensed',sans-serif; font-size:.75rem; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--accent); white-space:nowrap; }
+    .sec-divider-line { flex:1; height:1px; background:var(--border); }
+
+    #progress { position:fixed; top:0; left:0; height:2px; background:var(--accent); z-index:9999; transition:width .1s linear; }
+    [data-animate] { opacity:0; transform:translateY(18px); transition:opacity .5s ease,transform .5s ease; }
+    [data-animate].visible { opacity:1; transform:translateY(0); }
+    .text-muted { color:var(--muted)!important; }
+
+    @@media (max-width:991px) {
+      .detail-layout { grid-template-columns:1fr; }
+      .sidebar { position:static; }
+      .phase-row { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<!-- HERO -->
+<section class="detail-hero">
+  <div class="detail-hero-bg"></div>
+  <div class="container detail-hero-content">
+    <div class="breadcrumb-custom">
+      <a asp-controller="Home" asp-action="Index">Ana Sayfa</a>
+      <span class="sep">›</span>
+      <a asp-controller="Disaster" asp-action="Index">Afet Türleri</a>
+      <span class="sep">›</span>
+      <span class="current">@d.Name</span>
+    </div>
+    <div class="risk-badge @RiskBadgeClass(d.RiskLevel)">
+      <i class="bi bi-exclamation-octagon-fill"></i> @RiskLabel(d.RiskLevel)
+    </div>
+    <h1>@d.Name</h1>
+  </div>
+</section>
+
+<!-- CONTENT NAV -->
+<div class="content-nav">
+  <div class="container">
+    <div class="content-nav-inner">
+      @if (!string.IsNullOrWhiteSpace(d.WhatIsTitle))   { <a href="#nedir"     class="active">Nedir?</a> }
+      @if (!string.IsNullOrWhiteSpace(d.BeforeTitle))   { <a href="#once">Önce</a> }
+      @if (!string.IsNullOrWhiteSpace(d.DuringTitle))   { <a href="#sirasinda">Sırasında</a> }
+      @if (!string.IsNullOrWhiteSpace(d.AfterTitle))    { <a href="#sonrasinda">Sonrasında</a> }
+      <a href="#buyukluk">Büyüklük Skalası</a>
+      <a href="#turkiye">Türkiye Haritası</a>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="container">
+  <div class="detail-layout">
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+      <!-- NEDİR -->
+      @if (!string.IsNullOrWhiteSpace(d.WhatIsTitle))
+      {
+        <section id="nedir" data-animate>
+          <div class="section-label">Temel Bilgi</div>
+          <h2 class="section-title">@d.WhatIsTitle</h2>
+          @if (!string.IsNullOrWhiteSpace(d.WhatIsLead))  { <p class="lead-text">@d.WhatIsLead</p> }
+          @if (!string.IsNullOrWhiteSpace(d.WhatIsBody))  { <p class="body-text">@d.WhatIsBody</p> }
+
+          @if (!string.IsNullOrWhiteSpace(d.WhatIsCallout))
+          {
+            <div class="callout">
+              <div class="callout-label"><i class="bi bi-info-circle me-1"></i> Bilmek İstediğiniz</div>
+              <p>@d.WhatIsCallout</p>
+            </div>
+          }
+
+          @* ── VIDEO BLOĞU (DÜZELTİLDİ) ──────────────────────────────────────
+             Eski kod: Sadece VideoThumbnailUrl varsa gösteriyordu ve onclick
+             attribute'u Razor string interpolasyonuyla enjekte ediliyordu —
+             bu tırnak çakışmalarına yol açıyordu.
+             Yeni kod: VideoUrl VEYA VideoThumbnailUrl yeterliyse bloğu göster.
+             onclick yerine data-video-url attribute + addEventListener kullan.
+          *@
+          @if (hasVideo)
+          {
+            <div id="videoBox"
+                 class="video-placeholder mt-3@(!string.IsNullOrWhiteSpace(d.VideoUrl) ? " has-link" : "")"
+                 data-video-url="@d.VideoUrl">
+              @if (!string.IsNullOrWhiteSpace(d.VideoThumbnailUrl))
+              {
+                <img src="@d.VideoThumbnailUrl" alt="Video" />
+              }
+              <div class="play-btn"><i class="bi bi-play-fill"></i></div>
+              @if (!string.IsNullOrWhiteSpace(d.VideoCaption))
+              {
+                <div class="video-caption">@d.VideoCaption</div>
+              }
+            </div>
+          }
+        </section>
+      }
+
+      <!-- ÖNCE -->
+      @if (!string.IsNullOrWhiteSpace(d.BeforeTitle) || beforeItems.Any())
+      {
+        <section id="once" data-animate>
+          <div class="section-label">Hazırlık Protokolü</div>
+          <h2 class="section-title">@d.BeforeTitle</h2>
+          @if (!string.IsNullOrWhiteSpace(d.BeforeIntro)) { <p class="body-text">@d.BeforeIntro</p> }
+
+          @if (beforeItems.Any())
+          {
+            <div class="sec-divider">
+              <span class="sec-divider-label">Kontrol Listesi</span>
+              <div class="sec-divider-line"></div>
+            </div>
+            <ul class="checklist">
+              @foreach (var item in beforeItems)
+              {
+                <li onclick="toggleCheck(this)">
+                  <div class="check-box"></div>
+                  <span>@item</span>
+                </li>
+              }
+            </ul>
+          }
+        </section>
+      }
+
+      <!-- SIRASINDA -->
+      @if (!string.IsNullOrWhiteSpace(d.DuringTitle) || phase1Items.Any())
+      {
+        <section id="sirasinda" data-animate>
+          <div class="section-label">Acil Eylem</div>
+          <h2 class="section-title">@d.DuringTitle</h2>
+
+          @if (!string.IsNullOrWhiteSpace(d.DuringWarning))
+          {
+            <div class="callout" style="border-left-color:#E74C3C; background:rgba(192,57,43,.1);">
+              <div class="callout-label" style="color:#E74C3C;"><i class="bi bi-exclamation-triangle-fill me-1"></i> ASLA YAPMAYIN</div>
+              <p>@d.DuringWarning</p>
+            </div>
+          }
+
+          @if (phase1Items.Any() || phase2Items.Any() || phase3Items.Any())
+          {
+            <div class="phase-row">
+              @if (phase1Items.Any())
+              {
+                <div class="phase-card before">
+                  <div class="phase-label">@d.DuringPhase1Label</div>
+                  <h5>@d.DuringPhase1Title</h5>
+                  <ul class="phase-list">
+                    @foreach (var item in phase1Items) { <li>@item</li> }
+                  </ul>
+                </div>
+              }
+              @if (phase2Items.Any())
+              {
+                <div class="phase-card during">
+                  <div class="phase-label">@d.DuringPhase2Label</div>
+                  <h5>@d.DuringPhase2Title</h5>
+                  <ul class="phase-list">
+                    @foreach (var item in phase2Items) { <li>@item</li> }
+                  </ul>
+                </div>
+              }
+              @if (phase3Items.Any())
+              {
+                <div class="phase-card after">
+                  <div class="phase-label">@d.DuringPhase3Label</div>
+                  <h5>@d.DuringPhase3Title</h5>
+                  <ul class="phase-list">
+                    @foreach (var item in phase3Items) { <li>@item</li> }
+                  </ul>
+                </div>
+              }
+            </div>
+          }
+
+          @if (!string.IsNullOrWhiteSpace(d.DuringExtra))
+          {
+            <p class="body-text mt-3">@d.DuringExtra</p>
+          }
+        </section>
+      }
+
+      <!-- SONRASINDA -->
+      @if (!string.IsNullOrWhiteSpace(d.AfterTitle) || afterItems.Any())
+      {
+        <section id="sonrasinda" data-animate>
+          <div class="section-label">Toparlanma Süreci</div>
+          <h2 class="section-title">@d.AfterTitle</h2>
+          @if (!string.IsNullOrWhiteSpace(d.AfterIntro)) { <p class="body-text">@d.AfterIntro</p> }
+
+          @if (afterItems.Any())
+          {
+            <ul class="checklist">
+              @foreach (var item in afterItems)
+              {
+                <li onclick="toggleCheck(this)">
+                  <div class="check-box"></div>
+                  <span>@item</span>
+                </li>
+              }
+            </ul>
+          }
+
+          @if (!string.IsNullOrWhiteSpace(d.AfterCallout))
+          {
+            <div class="callout mt-3">
+              <div class="callout-label"><i class="bi bi-heart-pulse me-1"></i> Önemli Not</div>
+              <p>@d.AfterCallout</p>
+            </div>
+          }
+        </section>
+      }
+
+    </div><!-- /main-content -->
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      @if (Model.Related.Any())
+      {
+        <div class="sidebar-card" data-animate>
+          <div class="sidebar-heading">İlgili Afet Türleri</div>
+          @foreach (var r in Model.Related)
+          {
+            <a asp-controller="Disaster" asp-action="Details" asp-route-slug="@r.Slug" class="related-item">
+              <div class="related-icon"><i class="bi @r.Icon"></i></div>
+              <div>
+                <div class="related-name">@r.Name</div>
+                <div class="related-risk">@(r.RiskLevel == "critical" ? "Kritik Risk" : r.RiskLevel == "high" ? "Yüksek Risk" : r.RiskLevel == "medium" ? "Orta Risk" : "Düşük Risk")</div>
+              </div>
+            </a>
+          }
+        </div>
+      }
+    </aside>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Okuma ilerleme çubuğu
+  window.addEventListener('scroll', () => {
+    const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+    document.getElementById('progress').style.width = pct + '%';
+  });
+
+  // Animate on scroll
+  const els = document.querySelectorAll('[data-animate]');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) { setTimeout(() => e.target.classList.add('visible'), i * 60); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.08 });
+  els.forEach(el => obs.observe(el));
+
+  // Aktif nav linki
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.content-nav a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(sec => { if (window.scrollY >= sec.offsetTop - 160) current = sec.id; });
+    navLinks.forEach(link => { link.classList.toggle('active', link.getAttribute('href') === '#' + current); });
+  });
+
+  // Checklist tik
+  function toggleCheck(li) {
+    const box = li.querySelector('.check-box');
+    box.classList.toggle('done');
+    li.classList.toggle('done-item');
+  }
+
+
+  const videoBox = document.getElementById('videoBox');
+  if (videoBox) {
+    const videoUrl = videoBox.dataset.videoUrl;
+    if (videoUrl && videoUrl.trim() !== '') {
+      videoBox.addEventListener('click', function () {
+        window.open(videoUrl, '_blank', 'noopener,noreferrer');
+      });
+    }
+  }
+</script>
+</body>
+</html>

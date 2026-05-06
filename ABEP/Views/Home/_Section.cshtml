@@ -1,0 +1,44 @@
+@model List<ABEP.Models.DisasterModel>
+
+<section class="disasters" id="afetler">
+  <div class="container">
+    <div class="row mb-5" data-animate>
+      <div class="col-lg-6">
+        <div class="section-label">Afet Türleri</div>
+        <h2 class="section-title mb-3">Hangi Afete<br/>Hazırlıklısınız?</h2>
+        <p class="section-desc">Her afet türü için ayrı bilgi, hazırlık rehberi ve acil eylem planı bulunmaktadır.</p>
+      </div>
+    </div>
+    <div class="row g-4">
+      @if (Model != null && Model.Any())
+      {
+        @foreach (var d in Model)
+        {
+          <div class="col-md-6 col-lg-4" data-animate>
+            <a asp-controller="Disaster" asp-action="Details" asp-route-slug="@d.Slug" class="disaster-card">
+              <div class="disaster-icon">
+                <i class="bi @(string.IsNullOrEmpty(d.Icon) ? "bi-exclamation-triangle" : d.Icon)"></i>
+              </div>
+              <h4>@d.Name?.ToUpper()</h4>
+              <p>@d.ShortDescription</p>
+              <div class="card-arrow">Bilgi Al <i class="bi bi-arrow-right"></i></div>
+            </a>
+          </div>
+        }
+      }
+      else
+      {
+        <div class="col-12">
+          <p style="color:var(--muted); font-size:.9rem;">Henüz afet türü eklenmemiş.</p>
+        </div>
+      }
+    </div>
+
+    <div class="text-center mt-5" data-animate>
+      <a asp-controller="Disaster" asp-action="Index"
+         class="btn-outline-custom">
+        Tüm Afet Türlerini Gör <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+  </div>
+</section>

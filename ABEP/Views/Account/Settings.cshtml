@@ -1,0 +1,416 @@
+@model ABEP.Models.ViewModels.ChangePasswordViewModel
+@{
+    ViewData["Title"] = "Hesap Ayarları";
+    Layout = null;
+}
+
+<style>
+    * {  margin: 0; padding: 0; }
+    /* ── Sayfa Arka Planı ── */
+    .settings-page {
+        min-height: calc(100vh - 72px);
+        background: #0d1017;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 3.5rem 1rem 5rem;
+    }
+
+    .settings-wrapper {
+        width: 100%;
+        max-width: 520px;
+    }
+
+    /* ── Başlık ── */
+    .settings-header {
+        margin-bottom: 2rem;
+    }
+
+    .settings-header .page-label {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: .75rem;
+        font-weight: 700;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: #e63946;
+        margin-bottom: .4rem;
+    }
+
+    .settings-header h1 {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 2.4rem;
+        color: #f0f2f7;
+        letter-spacing: 1px;
+        margin: 0;
+        line-height: 1;
+    }
+
+    .settings-header p {
+        font-family: 'Barlow', sans-serif;
+        color: #6b7280;
+        font-size: .9rem;
+        margin-top: .6rem;
+        margin-bottom: 0;
+    }
+
+    /* ── Kart ── */
+    .settings-card {
+        background: #161a22;
+        border: 1px solid #252b36;
+        border-radius: 14px;
+        padding: 2rem 2rem 2.2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Kırmızı aksan çizgisi */
+    .settings-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #e63946, transparent);
+    }
+
+    .card-section-title {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #d1d5db;
+        letter-spacing: .5px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+    }
+
+    .card-section-title i {
+        color: #e63946;
+        font-size: 1rem;
+    }
+
+    /* ── Form Alanları ── */
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-label-custom {
+        font-family: 'Barlow', sans-serif;
+        font-size: .8rem;
+        font-weight: 500;
+        color: #9ca3af;
+        letter-spacing: .4px;
+        margin-bottom: .45rem;
+        display: block;
+    }
+
+    .input-wrap {
+        position: relative;
+    }
+
+    .input-wrap .input-icon {
+        position: absolute;
+        left: .95rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #4b5563;
+        font-size: .9rem;
+        pointer-events: none;
+        transition: color .2s;
+    }
+
+    .input-wrap:focus-within .input-icon {
+        color: #e63946;
+    }
+
+    .form-control-custom {
+        width: 100%;
+        background: #0d1017;
+        border: 1px solid #252b36;
+        border-radius: 8px;
+        color: #e8eaf0;
+        font-family: 'Barlow', sans-serif;
+        font-size: .9rem;
+        padding: .7rem .95rem .7rem 2.5rem;
+        outline: none;
+        transition: border-color .2s, box-shadow .2s;
+        appearance: none;
+    }
+
+    .form-control-custom::placeholder { color: #374151; }
+
+    .form-control-custom:focus {
+        border-color: #e63946;
+        box-shadow: 0 0 0 3px rgba(230,57,70,.12);
+    }
+
+    .form-control-custom.is-invalid {
+        border-color: #dc2626;
+    }
+
+    /* Toggle şifre göster */
+    .toggle-pw {
+        position: absolute;
+        right: .85rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #4b5563;
+        cursor: pointer;
+        padding: 0;
+        font-size: .95rem;
+        transition: color .2s;
+        line-height: 1;
+    }
+
+    .toggle-pw:hover { color: #9ca3af; }
+
+    /* Validation mesajı */
+    .field-error {
+        font-family: 'Barlow', sans-serif;
+        font-size: .78rem;
+        color: #ef4444;
+        margin-top: .35rem;
+        display: block;
+    }
+
+    /* ── Şifre Gücü Göstergesi ── */
+    .pw-strength-bar {
+        display: flex;
+        gap: 4px;
+        margin-top: .55rem;
+    }
+
+    .pw-strength-bar span {
+        flex: 1;
+        height: 3px;
+        border-radius: 2px;
+        background: #252b36;
+        transition: background .3s;
+    }
+
+    .pw-label {
+        font-family: 'Barlow', sans-serif;
+        font-size: .74rem;
+        color: #6b7280;
+        margin-top: .3rem;
+    }
+
+    /* ── Ayırıcı ── */
+    .settings-divider {
+        border: none;
+        border-top: 1px solid #1f2533;
+        margin: 1.8rem 0;
+    }
+
+    /* ── Kaydet Butonu ── */
+    .btn-save {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .7rem 2rem;
+        background: #e63946;
+        border: none;
+        border-radius: 8px;
+        color: #fff;
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: .95rem;
+        font-weight: 600;
+        letter-spacing: .6px;
+        cursor: pointer;
+        transition: opacity .2s, transform .15s;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .btn-save:hover { opacity: .88; }
+    .btn-save:active { transform: scale(.98); }
+
+    .btn-save.loading {
+        opacity: .7;
+        pointer-events: none;
+    }
+
+    /* ── Alert ── */
+    .alert-custom {
+        border-radius: 8px;
+        padding: .85rem 1rem;
+        font-family: 'Barlow', sans-serif;
+        font-size: .88rem;
+        display: flex;
+        align-items: flex-start;
+        gap: .6rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .alert-success-custom {
+        background: rgba(16,185,129,.08);
+        border: 1px solid rgba(16,185,129,.25);
+        color: #34d399;
+    }
+
+    .alert-danger-custom {
+        background: rgba(239,68,68,.08);
+        border: 1px solid rgba(239,68,68,.25);
+        color: #f87171;
+    }
+</style>
+
+<div class="settings-page">
+    <div class="settings-wrapper">
+
+        <!-- Başlık -->
+        <div class="settings-header">
+            <div class="page-label"><i class="bi bi-gear-fill"></i> &nbsp;Ayarlar</div>
+            <h1>Hesap Ayarları</h1>
+            <p>Hesabınızla ilgili güvenlik ayarlarını bu sayfadan yönetebilirsiniz.</p>
+        </div>
+
+        <!-- Başarı / Hata Mesajı -->
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert-custom alert-success-custom mb-4">
+                <i class="bi bi-check-circle-fill mt-1"></i>
+                <span>@TempData["Success"]</span>
+            </div>
+        }
+
+        @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.Any(v => v.Errors.Count > 0))
+        {
+            <div class="alert-custom alert-danger-custom mb-4">
+                <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+                <span>Lütfen aşağıdaki hataları düzeltin.</span>
+            </div>
+        }
+
+        <!-- Şifre Değiştirme Kartı -->
+        <div class="settings-card">
+            <div class="card-section-title">
+                <i class="bi bi-shield-lock-fill"></i> Şifre Değiştir
+            </div>
+
+            <form asp-controller="Account" asp-action="Settings" method="post">
+                @Html.AntiForgeryToken()
+
+                <!-- Mevcut Şifre -->
+                <div class="form-group">
+                    <label class="form-label-custom">Mevcut Şifre</label>
+                    <div class="input-wrap">
+                        <i class="bi bi-lock input-icon"></i>
+                        <input asp-for="CurrentPassword"
+                               type="password"
+                               class="form-control-custom @(ViewData.ModelState["CurrentPassword"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                               placeholder="••••••••"
+                               id="currentPw" />
+                        <button type="button" class="toggle-pw" onclick="togglePw('currentPw', this)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="CurrentPassword" class="field-error"></span>
+                </div>
+
+                <hr class="settings-divider">
+
+                <!-- Yeni Şifre -->
+                <div class="form-group">
+                    <label class="form-label-custom">Yeni Şifre</label>
+                    <div class="input-wrap">
+                        <i class="bi bi-key input-icon"></i>
+                        <input asp-for="NewPassword"
+                               type="password"
+                               class="form-control-custom @(ViewData.ModelState["NewPassword"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                               placeholder="••••••••"
+                               id="newPw"
+                               oninput="checkStrength(this.value)" />
+                        <button type="button" class="toggle-pw" onclick="togglePw('newPw', this)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="NewPassword" class="field-error"></span>
+                    <!-- Şifre gücü çubuğu -->
+                    <div class="pw-strength-bar">
+                        <span id="s1"></span>
+                        <span id="s2"></span>
+                        <span id="s3"></span>
+                        <span id="s4"></span>
+                    </div>
+                    <div class="pw-label" id="pwLabel">En az 6 karakter</div>
+                </div>
+
+                <!-- Yeni Şifre Tekrar -->
+                <div class="form-group mb-0">
+                    <label class="form-label-custom">Yeni Şifre Tekrar</label>
+                    <div class="input-wrap">
+                        <i class="bi bi-key-fill input-icon"></i>
+                        <input asp-for="ConfirmPassword"
+                               type="password"
+                               class="form-control-custom @(ViewData.ModelState["ConfirmPassword"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                               placeholder="••••••••"
+                               id="confirmPw" />
+                        <button type="button" class="toggle-pw" onclick="togglePw('confirmPw', this)">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="ConfirmPassword" class="field-error"></span>
+                </div>
+
+                <hr class="settings-divider">
+
+                <button type="submit" class="btn-save" id="saveBtn">
+                    <i class="bi bi-check-lg"></i> Şifreyi Güncelle
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        // Şifre göster/gizle
+        function togglePw(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+        }
+
+        // Şifre gücü göstergesi
+        function checkStrength(pw) {
+            const bars = [document.getElementById('s1'), document.getElementById('s2'),
+                          document.getElementById('s3'), document.getElementById('s4')];
+            const label = document.getElementById('pwLabel');
+
+            let score = 0;
+            if (pw.length >= 6)  score++;
+            if (pw.length >= 10) score++;
+            if (/[A-Z]/.test(pw) && /[0-9]/.test(pw)) score++;
+            if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+            const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e'];
+            const labels = ['Çok Zayıf', 'Zayıf', 'Orta', 'Güçlü'];
+
+            bars.forEach((b, i) => {
+                b.style.background = i < score ? colors[score - 1] : '#252b36';
+            });
+
+            label.textContent = score > 0 ? labels[score - 1] : 'En az 6 karakter';
+            label.style.color  = score > 0 ? colors[score - 1] : '#6b7280';
+        }
+
+        // Gönder butonu loading durumu
+        document.querySelector('form').addEventListener('submit', function () {
+            const btn = document.getElementById('saveBtn');
+            btn.classList.add('loading');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Güncelleniyor...';
+        });
+    </script>
+}

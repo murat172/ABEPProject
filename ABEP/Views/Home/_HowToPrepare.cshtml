@@ -1,0 +1,51 @@
+@model HowToPrepareModel
+
+
+<section class="howto" id="hazirlik">
+  <div class="container">
+    <div class="row g-5 align-items-center">
+      <div class="col-lg-5" data-animate>
+        <div class="howto-visual">
+          <img src="@Model.ImageUrl" alt="@Model.Title" />
+          <div class="howto-visual-badge">Adım Adım Hazırlık</div>
+        </div>
+      </div>
+      <div class="col-lg-6 offset-lg-1" data-animate>
+        <div class="section-label">@Model.Eyebrow</div>
+        <h2 class="section-title mb-4">@Model.Title</h2>
+
+        <div class="howto-step">
+          <div class="step-num">01</div>
+          <div class="step-content">
+            <h5>@Model.StepItem1Title</h5>
+            <p>@Model.StepItem1Description</p>
+          </div>
+        </div>
+
+        <div class="howto-step">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <h5>@Model.StepItem2Title</h5>
+            <p>@Model.StepItem2Description</p>
+          </div>
+        </div>
+
+        <div class="howto-step">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <h5>@Model.StepItem3Title</h5>
+            <p>@Model.StepItem3Description</p>
+          </div>
+        </div>
+
+        <div class="howto-step" style="margin-bottom:0">
+          <div class="step-num">04</div>
+          <div class="step-content">
+            <h5>@Model.StepItem4Title</h5>
+            <p>@Model.StepItem4Description</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

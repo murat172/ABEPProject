@@ -1,0 +1,54 @@
+@model List<ContactModel>
+
+<div class="main-content" id="sec-messages">
+    <div class="section-header">
+        <div class="section-heading">MESAJLAR</div>
+    </div>
+    <div class="msg-detail-layout">
+        <div>
+            <div class="msg-list">
+                @foreach (var msg in Model)
+                {
+                    <div class="msg-list-item unread"
+                         data-name="@msg.FullName.Replace("\"", "&quot;")"
+                         data-email="@msg.Email.Replace("\"", "&quot;")"
+                         data-subject="@msg.Subject.Replace("\"", "&quot;")"
+                         data-message="@msg.Message.Replace("\"", "&quot;")"
+                         data-date="@msg.CreatedAt.ToString("dd MMM yyyy, HH:mm")"
+                         onclick="loadMsg(this)">
+                        <div class="msg-item-top">
+                            <div class="msg-item-name">@msg.FullName</div>
+                            <div class="msg-item-time">@msg.CreatedAt.ToString("dd MMM")</div>
+                        </div>
+                        <div class="msg-item-subject">@msg.Subject</div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="msg-viewer">
+            <div class="msg-viewer-header">
+                <h4 id="mvSubject">—</h4>
+                <div class="msg-from">Gönderen: <strong id="mvName"></strong> &lt;<span id="mvEmail"></span>&gt;</div>
+                <div class="d-flex gap-2 mt-2">
+                    <span id="mvDate" style="font-size:.75rem;color:var(--muted);"></span>
+                </div>
+            </div>
+            <div class="msg-viewer-body" id="mvBody" style="white-space:pre-wrap;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function loadMsg(el) {
+        document.getElementById('mvSubject').textContent = el.dataset.subject;
+        document.getElementById('mvName').textContent    = el.dataset.name;
+        document.getElementById('mvEmail').textContent   = el.dataset.email;
+        document.getElementById('mvDate').textContent    = el.dataset.date;
+        document.getElementById('mvBody').textContent    = el.dataset.message;
+
+        document.querySelectorAll('.msg-list-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+        el.classList.remove('unread');
+    }
+</script>

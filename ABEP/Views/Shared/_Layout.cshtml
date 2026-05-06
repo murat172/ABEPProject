@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ABEP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Barlow+Condensed:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        /* ── Auth Butonları ─────────────────────────────────────────── */
+        .auth-area {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+        }
+
+        /* Giriş Yap – şeffaf kenarlıklı */
+        .btn-login {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            padding: .42rem 1rem;
+            border: 1px solid rgba(255,255,255,.18);
+            border-radius: 4px;
+            color: #e8eaf0;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: .88rem;
+            font-weight: 500;
+            letter-spacing: .5px;
+            text-decoration: none;
+            background: transparent;
+            transition: border-color .2s, color .2s, background .2s;
+            white-space: nowrap;
+        }
+        .btn-login:hover {
+            border-color: var(--accent, #e63946);
+            color: var(--accent, #e63946);
+            background: rgba(230,57,70,.06);
+        }
+
+        /* Kayıt Ol – kırmızı dolu */
+        .btn-register {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            padding: .42rem 1rem;
+            border: 1px solid var(--accent, #e63946);
+            border-radius: 4px;
+            color: #fff;
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: .88rem;
+            font-weight: 600;
+            letter-spacing: .5px;
+            text-decoration: none;
+            background: var(--accent, #e63946);
+            transition: opacity .2s;
+            white-space: nowrap;
+        }
+        .btn-register:hover { opacity: .85; color: #fff; }
+
+        /* Kullanıcı chip – giriş yapıldıysa */
+        .user-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .38rem .85rem;
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 20px;
+            color: #e8eaf0;
+            font-family: 'Barlow', sans-serif;
+            font-size: .85rem;
+            background: rgba(255,255,255,.05);
+            cursor: pointer;
+            user-select: none;
+            transition: border-color .2s, background .2s;
+        }
+        .user-chip:hover {
+            border-color: rgba(255,255,255,.25);
+            background: rgba(255,255,255,.09);
+        }
+        .user-chip::after {
+            display: none !important;
+        }
+        .user-chip .u-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent, #e63946);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .7rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        /* Dropdown menü */
+        .user-dropdown-menu {
+    background: #161a22 !important;
+    border: 1px solid #252b36;
+    border-radius: 10px;
+    min-width: 190px;
+    padding: .5rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,.45);
+}
+
+.user-dropdown-menu .dropdown-item {
+    color: #e8eaf0 !important;
+    border-radius: 6px;
+    padding: .5rem .85rem;
+    font-size: .88rem;
+    font-family: 'Barlow', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    transition: background .15s;
+}
+
+.user-dropdown-menu .dropdown-item:hover {
+    background: rgba(255,255,255,.07) !important;
+    color: #fff !important;
+}
+    </style>
+</head>
+<body>
+
+    <div id="progress"></div>
+
+    <!-- ── NAVBAR ── -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">ABEP</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navMenu" aria-controls="navMenu"
+                    aria-expanded="false" aria-label="Menüyü aç">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav mx-auto gap-1">
+                    <li class="nav-item"><a class="nav-link" asp-controller="Disaster" asp-action="Index">Afet Türleri</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Experiences" asp-action="Index">Deneyimler</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Contact" asp-action="Index">İletişim</a></li>
+                </ul>
+
+                <!-- ── AUTH ALANI ── -->
+                <div class="auth-area">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        var fullName = User.Identity.Name ?? "";
+                        var initials = fullName.Length >= 2
+                            ? fullName.Substring(0, 2).ToUpper()
+                            : fullName.ToUpper();
+                        var isAdmin = User.IsInRole("Admin");
+
+                        <div class="dropdown">
+                            <div class="user-chip"
+                                 data-bs-toggle="dropdown"
+                                 data-bs-auto-close="true"
+                                 aria-expanded="false">
+                                <div class="u-avatar">@initials</div>
+                                <span>@fullName</span>
+                                <i class="bi bi-chevron-down" style="font-size:.7rem; opacity:.6; margin-left:.15rem;"></i>
+                            </div>
+
+                            <ul class="dropdown-menu dropdown-menu-end user-dropdown-menu">
+
+                                @if (isAdmin)
+                                {
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Index">
+                                            <i class="bi bi-speedometer2" style="color:#e63946;"></i> Admin Paneli
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                }
+
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Account" asp-action="Settings">
+                                        <i class="bi bi-person-gear" style="color:#6b7280;"></i> Hesap Ayarları
+                                    </a>
+                                </li>
+
+                                <li><hr class="dropdown-divider"></li>
+
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" style="margin:0;">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item text-danger-item logout-btn-item">
+                                            <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                                        </button>
+                                    </form>
+                                </li>
+
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Login" class="btn-login">
+                            <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+                        </a>
+                        <a asp-controller="Account" asp-action="Register" class="btn-register">
+                            <i class="bi bi-person-plus"></i> Kayıt Ol
+                        </a>
+                    }
+                </div>
+                <!-- ── /AUTH ALANI ── -->
+
+            </div>
+        </div>
+    </nav>
+
+    <main role="main" class="pb-3 w-100">
+        @RenderBody()
+    </main>
+
+    <!-- ── FOOTER ── -->
+    <footer id="iletisim">
+        <div class="container">
+            <div class="row g-5">
+
+                <!-- MARKA & SOSYAL -->
+                <div class="col-lg-4">
+                    <div class="brand">ABEP</div>
+                    <p>Türkiye'nin kapsamlı afet bilinçlendirme ve eğitim platformu. Hayatları kurtarmak için bilgi yayıyoruz.</p>
+                    <div class="d-flex gap-3 mt-3">
+                        <a href="#" class="footer-social"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#" class="footer-social"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="footer-social"><i class="bi bi-youtube"></i></a>
+                        <a href="#" class="footer-social"><i class="bi bi-facebook"></i></a>
+                    </div>
+                </div>
+
+                <!-- LİNKLER -->
+                <div class="col-6 col-lg-2">
+                    <div class="footer-heading">Platform</div>
+                    <ul class="footer-links">
+                        <li><a asp-controller="Disaster"    asp-action="Index">Afet Türleri</a></li>
+                        <li><a asp-controller="Experiences" asp-action="Index">Deneyimler</a></li>
+                        <li><a href="#">Haberler</a></li>
+                        <li><a asp-controller="Contact"     asp-action="Index">İletişim</a></li>
+                        <li><a href="#">Hakkımızda</a></li>
+                    </ul>
+                </div>
+
+                <!-- BÜLTEN + ACİL HATLAR -->
+                <div class="col-lg-6">
+                    <div class="footer-heading">Kayıt Ol</div>
+                    <p class="footer-sub-desc">Afet hakkında bilinçlenmek için aramıza katılın.</p>
+                    <div class="footer-input-row">
+                        <a class="btn-login" type="button" asp-controller="Account" asp-action="Login">Kayıt Ol</a>
+                    </div>
+
+                    <!-- ACİL HATLAR -->
+                    <div class="footer-emergency">
+                        <i class="bi bi-telephone-fill footer-emergency-icon"></i>
+                        <div class="footer-emergency-item">
+                            <div class="footer-emergency-num">112</div>
+                            <div class="footer-emergency-lbl">Acil Çağrı</div>
+                        </div>
+                        <div class="footer-emergency-divider"></div>
+                        <div class="footer-emergency-item">
+                            <div class="footer-emergency-num">156</div>
+                            <div class="footer-emergency-lbl">AFAD</div>
+                        </div>
+                        <div class="footer-emergency-divider"></div>
+                        <div class="footer-emergency-item">
+                            <div class="footer-emergency-num">110</div>
+                            <div class="footer-emergency-lbl">İtfaiye</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="footer-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <span>© 2025 ABEP. Tüm hakları saklıdır.</span>
+                <span class="footer-badge"><i class="bi bi-shield-check"></i> Güvenli Platform</span>
+                <span>
+                    <a href="#">Gizlilik</a> ·
+                    <a href="#">Şartlar</a> ·
+                    <a href="#">KVKK</a>
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var dropdownEl = document.querySelector('[data-bs-toggle="dropdown"]');
+    if (dropdownEl) {
+      var dropdown = new bootstrap.Dropdown(dropdownEl);
+      dropdownEl.addEventListener('click', function () {
+        dropdown.toggle();
+      });
+    }
+  });
+</script>
+</body>
+</html>

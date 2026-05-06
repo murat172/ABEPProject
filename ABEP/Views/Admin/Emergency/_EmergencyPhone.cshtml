@@ -1,0 +1,47 @@
+@model List<EmergencyPhoneModel>
+
+<div class="field-group">
+    <div class="field-group-header">
+        <i class="bi bi-telephone-fill"></i> Acil Numaralar
+        <span class="field-hint">Sağ kolonda görünen hızlı erişim numaraları</span>
+    </div>
+    <div class="field-group-body">
+
+        <form asp-controller="Emergency" asp-action="EmergencyPhoneSave" class="enum-row mb-3">
+            <div class="kit-drag" style="visibility:hidden;"><i class="bi bi-grip-vertical"></i></div>
+            <input type="text" name="PhoneName" class="admin-field" placeholder="Etiket (ör. İtfaiye)" style="flex:1;" />
+            <input type="text" name="Phone" class="admin-field enum-num-input" placeholder="Numara (ör. 110)" />
+            <button type="submit" class="btn-add">
+                <i class="bi bi-plus-lg"></i> Ekle
+            </button>
+        </form>
+
+        <div class="emergency-nums-editor" id="emergencyNumsEditor">
+            @foreach (var phone in Model)
+            {
+                <div class="enum-row">
+                    <div class="kit-drag"><i class="bi bi-grip-vertical"></i></div>
+
+                    <form asp-controller="Emergency" asp-action="EmergencyPhoneUpdate" style="display:contents;">
+                        <input type="hidden" name="Id" value="@phone.Id" />
+                        <input type="text" name="PhoneName" class="admin-field"
+                               value="@phone.PhoneName" placeholder="Etiket" style="flex:1;" />
+                        <input type="text" name="Phone" class="admin-field enum-num-input"
+                               value="@phone.Phone" placeholder="Numara" />
+                        <button type="submit" class="icon-btn">
+                            <i class="bi bi-floppy"></i>
+                        </button>
+                    </form>
+
+                    <form asp-controller="Emergency" asp-action="EmergencyPhoneDelete">
+                        <input type="hidden" name="id" value="@phone.Id" />
+                        <button type="submit" class="icon-btn-danger">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            }
+        </div>
+
+    </div>
+</div>

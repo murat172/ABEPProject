@@ -1,0 +1,93 @@
+@* Views/Admin/_Roles.cshtml *@
+
+<div class="main-content" id="sec-roles">
+    <div class="section-heading mb-4">ROLLER & İZİNLER</div>
+
+    <div class="panel mb-3">
+        <div class="panel-body" style="padding:1.5rem;">
+            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                <div>
+                    <div style="font-weight:600;font-size:1rem;">Admin Kullanıcılar</div>
+                    <div style="color:var(--muted);font-size:0.82rem;">Sistemde yönetici yetkisine sahip kullanıcılar</div>
+                </div>
+                <div style="color:var(--muted);font-size:0.85rem;">
+                    Toplam Admin: <strong id="adminCount" style="color:var(--accent);">–</strong>
+                </div>
+            </div>
+
+            <!-- Admin bilgi kartı -->
+            <div style="background:rgba(230,57,70,.06);border:1px solid rgba(230,57,70,.2);border-radius:8px;padding:1rem;margin-bottom:1.5rem;font-size:0.85rem;color:var(--muted);">
+                <i class="bi bi-info-circle-fill me-1" style="color:var(--accent);"></i>
+                Sistemde <strong>Admin</strong> ve <strong>User</strong> olmak üzere iki rol bulunmaktadır.
+                Admin rolündeki kullanıcılar bu panele erişebilir. Kullanıcı Yönetimi bölümünden rol değişikliği yapabilirsiniz.
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table class="admin-table w-100">
+                    <thead>
+                        <tr>
+                            <th>Admin Kullanıcı</th>
+                            <th>E-posta</th>
+                            <th>Katılım Tarihi</th>
+                            <th style="text-align:right;">İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminsTableBody">
+                        <tr>
+                            <td colspan="4" style="text-align:center;padding:2rem;color:var(--muted);">
+                                <i class="bi bi-hourglass-split me-2"></i>Yükleniyor...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function loadAdmins() {
+    try {
+        const res = await fetch('/Admin/GetAdmins');
+        const admins = await res.json();
+        document.getElementById('adminCount').textContent = admins.length;
+
+        const tbody = document.getElementById('adminsTableBody');
+        if (!admins.length) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--muted);">Admin bulunamadı.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = admins.map(u => {
+            const initials = (u.fullName || u.email || '?').slice(0, 2).toUpperCase();
+            const date = new Date(u.createdAt).toLocaleDateString('tr-TR');
+            return `
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="user-avatar-sm" style="background:var(--accent);">${initials}</div>
+                        <div>
+                            <div style="font-weight:500;">${u.fullName}</div>
+                            <span style="background:rgba(230,57,70,.15);color:#e63946;border:1px solid rgba(230,57,70,.3);padding:0.1rem 0.5rem;border-radius:20px;font-size:0.7rem;font-weight:700;">
+                                <i class="bi bi-shield-fill"></i> Admin
+                            </span>
+                        </div>
+                    </div>
+                </td>
+                <td style="color:var(--muted);">${u.email}</td>
+                <td style="color:var(--muted);">${date}</td>
+                <td style="text-align:right;">
+                    <button class="btn-role-toggle btn-remove-admin" onclick="toggleAdmin('${u.id}')">
+                        <i class="bi bi-person-dash"></i> Rolü Al
+                    </button>
+                </td>
+            </tr>`;
+        }).join('');
+    } catch (e) {
+        document.getElementById('adminsTableBody').innerHTML =
+            '<tr><td colspan="4" style="text-align:center;color:#f88;padding:2rem;">Yükleme hatası.</td></tr>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadAdmins);
+</script>

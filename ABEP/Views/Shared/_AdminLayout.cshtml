@@ -1,0 +1,118 @@
+@using Microsoft.AspNetCore.Identity
+@using ABEP.Models
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ABEP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Barlow+Condensed:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body>
+    <div id="progress"></div>   
+
+    <!-- ════ SIDEBAR ════ -->
+    <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+        <div>
+        <div class="brand">ABEP</div>
+        </div>
+        <div class="admin-tag">Admin</div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="sidebar-section-label">Genel</div>
+        <a class="nav-item-admin active" onclick="switchSection('dashboard', this)">
+        <i class="bi bi-grid-1x2-fill"></i> Gösterge Paneli
+        </a>
+        <a class="nav-item-admin" onclick="switchSection('messages', this)">
+        <i class="bi bi-envelope-fill"></i> Mesajlar
+        </a>
+        
+
+        <div class="sidebar-section-label">Ana Sayfa</div>
+        <a class="nav-item-admin" onclick="switchSection('homepage-hero', this)">
+            <i class="bi bi-house-fill"></i> Ana Sayfa – Hero
+        </a>
+        <a class="nav-item-admin" onclick="switchSection('homepage-steps', this)">
+            <i class="bi bi-list-ol"></i> Hazırlık Adımları
+        </a>
+        <a class="nav-item-admin" onclick="switchSection('homepage-kit', this)">
+            <i class="bi bi-bag-fill"></i> Acil Çanta
+        </a>
+
+        <div class="sidebar-section-label">İçerik</div>
+        <a class="nav-item-admin" onclick="switchSection('disasters', this)">
+        <i class="bi bi-activity"></i> Afet Yönetimi
+        </a>
+
+        <div class="sidebar-section-label">Kullanıcılar</div>
+        <a class="nav-item-admin" onclick="switchSection('users', this)">
+        <i class="bi bi-people-fill"></i> Kullanıcılar
+        </a>
+        <a class="nav-item-admin" onclick="switchSection('roles', this)">
+        <i class="bi bi-shield-fill"></i> Roller & İzinler
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        @{
+            var currentUser = await UserManager.GetUserAsync(User);
+            var fullName    = currentUser?.UserName ?? "Kullanıcı";
+            var roles       = currentUser != null
+                                ? await UserManager.GetRolesAsync(currentUser)
+                                : new List<string>();
+            var roleLabel   = roles.FirstOrDefault() ?? "Kullanıcı";
+
+            // İlk harf baş harfleri: "Ahmet Kaya" → "AK"
+            var initials = string.Concat(
+                fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                        .Take(2)
+                        .Select(w => char.ToUpper(w[0]))
+            );
+        }
+        <div class="admin-profile">
+            <div class="admin-avatar">@initials</div>
+            <div>
+                <div class="admin-name">@fullName</div>
+                <div class="admin-role">@roleLabel</div>
+            </div>
+            <form asp-area="Identity" asp-page="/Account/Logout"
+                  asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })"
+                  method="post" style="margin:0">
+                <a type="button" class="logout-btn" title="Çıkış" asp-controller="Account" asp-action="Login">
+                    <i class="bi bi-box-arrow-right"></i>
+                </a>
+            </form>
+        </div>
+    </div>
+    </aside>
+
+    <!-- ════ TOPBAR ════ -->
+    <header class="topbar">
+        <button class="mobile-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+        <div>
+            <div class="topbar-title" id="topbarTitle">Gösterge Paneli</div>
+            <div class="topbar-breadcrumb">ABEP / <span id="topbarSub">Dashboard</span></div>
+        </div>
+    </header>
+
+    <div class="main-wrapper">
+        @RenderBody()
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

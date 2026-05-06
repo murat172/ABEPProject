@@ -1,0 +1,147 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ABEP.Models.ApplicationUser> SignInManager
+@inject UserManager<ABEP.Models.ApplicationUser> UserManager
+@model List<ExperiencesModel>
+
+@{
+    var isAdmin = SignInManager.IsSignedIn(User) && User.IsInRole("Admin");
+}
+
+<div class="stories-grid" id="storiesGrid">
+
+    @foreach (var item in Model)
+    {
+        var cat = (item.Disaster ?? "").ToLower() switch {
+            "earthquake" or "deprem"                        => "earthquake",
+            "flood"      or "sel / taşkın" or "sel"        => "flood",
+            "fire"       or "yangın"                        => "fire",
+            "survival"   or "hayatta kalma / genel"
+                         or "hayatta kalma"                 => "survival",
+            _                                               => "other"
+        };
+
+        var accentClass = cat switch {
+            "earthquake" => "accent-red",
+            "flood"      => "accent-blue",
+            "fire"       => "accent-amber",
+            "survival"   => "accent-green",
+            _            => "accent-blue"
+        };
+
+        var catClass = cat switch {
+            "earthquake" => "cat-earthquake",
+            "flood"      => "cat-flood",
+            "fire"       => "cat-fire",
+            "survival"   => "cat-survival",
+            _            => "cat-flood"
+        };
+
+        var catLabel = cat switch {
+            "earthquake" => "Deprem",
+            "flood"      => "Sel / Taşkın",
+            "fire"       => "Yangın",
+            "survival"   => "Hayatta Kalma",
+            _            => item.Disaster
+        };
+
+        var shortText = (item.Experience ?? "").Length > 150
+            ? item.Experience!.Substring(0, 150) + "…"
+            : item.Experience;
+
+        var hasMore = (item.Experience ?? "").Length > 150;
+
+        <div class="story-card" data-category="@cat" data-animate>
+            <div class="card-accent-bar @accentClass"></div>
+            <div class="card-body-inner">
+
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem;">
+                    <div class="card-category @catClass">@catLabel</div>
+
+                    @if (isAdmin)
+                    {
+                        <form asp-controller="Experiences" asp-action="Delete" method="post"
+                              onsubmit="return confirm('Bu deneyimi silmek istediğinizden emin misiniz?')"
+                              style="margin:0;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <button type="submit" title="Sil"
+                                    style="background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.3);color:#e74c3c;
+                                           border-radius:4px;padding:.2rem .5rem;cursor:pointer;font-size:.8rem;
+                                           transition:all .2s;">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    }
+                </div>
+
+                <p class="card-quote card-quote-short">@shortText</p>
+
+                @if (hasMore)
+                {
+                    <p class="card-quote card-quote-full d-none">@item.Experience</p>
+                    <button class="btn-read-more" onclick="toggleReadMore(this)">
+                        <i class="bi bi-chevron-down"></i> Devamını oku
+                    </button>
+                }
+
+                <div class="card-footer-inner">
+                    <div class="card-author">
+                        <div class="author-avatar">
+                            @string.Concat(item.FullName.Split(' ')
+                                .Where(w => w.Length > 0)
+                                .Take(2)
+                                .Select(w => w[0]))
+                        </div>
+                        <div>
+                            <div class="author-name">@item.FullName</div>
+                            <div class="author-meta">@item.City · @item.Date</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    }
+
+</div>
+
+<style>
+    .btn-read-more {
+        background: none;
+        border: none;
+        color: var(--accent, #e63946);
+        font-size: .82rem;
+        font-weight: 600;
+        padding: .25rem 0;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        margin-bottom: .5rem;
+        transition: opacity .2s;
+    }
+    .btn-read-more:hover { opacity: .75; }
+    .btn-read-more i { transition: transform .25s; }
+    .btn-read-more.open i { transform: rotate(180deg); }
+</style>
+
+<script>
+    function toggleReadMore(btn) {
+        const card  = btn.closest('.card-body-inner');
+        const short = card.querySelector('.card-quote-short');
+        const full  = card.querySelector('.card-quote-full');
+        const isOpen = btn.classList.contains('open');
+
+        if (isOpen) {
+            full.classList.add('d-none');
+            short.classList.remove('d-none');
+            btn.classList.remove('open');
+            btn.innerHTML = '<i class="bi bi-chevron-down"></i> Devamını oku';
+        } else {
+            short.classList.add('d-none');
+            full.classList.remove('d-none');
+            btn.classList.add('open');
+            btn.innerHTML = '<i class="bi bi-chevron-up"></i> Daha az göster';
+        }
+    }
+</script>

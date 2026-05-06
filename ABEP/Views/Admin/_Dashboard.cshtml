@@ -1,0 +1,116 @@
+@* _Dashboard.cshtml *@
+@{
+    // AdminViewModel'den kısayol
+    var vm = ViewData["AdminVM"] as AdminViewModel ?? (AdminViewModel)Model;
+}
+
+<div class="main-content active" id="sec-dashboard">
+
+    <!-- ── Stat Cards ── -->
+    <div class="stat-grid">
+
+        <div class="stat-card red">
+            <div class="stat-label"><i class="bi bi-people-fill"></i> Toplam Kullanıcı</div>
+            <div class="stat-num" id="dash-users">@vm.TotalUsers.ToString("N0")</div>
+            <div class="stat-change up">
+                <i class="bi bi-database"></i> Kayıtlı kullanıcı
+            </div>
+            <div class="stat-sparkline"><i class="bi bi-person-fill"></i></div>
+        </div>
+
+        <div class="stat-card green">
+            <div class="stat-label"><i class="bi bi-journal-richtext"></i> Paylaşılan Deneyim</div>
+            <div class="stat-num" id="dash-exp">@vm.TotalExperiences.ToString("N0")</div>
+            <div class="stat-change up">
+                <i class="bi bi-activity"></i> Toplam deneyim
+            </div>
+            <div class="stat-sparkline"><i class="bi bi-activity"></i></div>
+        </div>
+
+        <div class="stat-card yellow">
+            <div class="stat-label"><i class="bi bi-envelope-fill"></i> İletişim Formu</div>
+            <div class="stat-num" id="dash-msg">@vm.NewMessages.ToString("N0")</div>
+            <div class="stat-change">
+                <i class="bi bi-chat-dots"></i> Toplam mesaj
+            </div>
+            <div class="stat-sparkline"><i class="bi bi-chat-dots"></i></div>
+        </div>
+
+        <div class="stat-card blue">
+            <div class="stat-label"><i class="bi bi-newspaper"></i> Yayındaki İçerik</div>
+            <div class="stat-num" id="dash-content">@vm.PublishedContent.ToString("N0")</div>
+            <div class="stat-change up">
+                <i class="bi bi-file-earmark-check"></i> Aktif içerik
+            </div>
+            <div class="stat-sparkline"><i class="bi bi-file-text"></i></div>
+        </div>
+
+    </div>
+
+    <!-- ── Son Gelen Mesajlar ── -->
+    <div class="panel">
+        <div class="panel-header">
+            <i class="bi bi-envelope-fill" style="color:var(--accent);"></i>
+            <span class="panel-title">Son Gelen Mesajlar</span>
+            <a class="panel-action"
+               onclick="switchSection('messages', document.querySelector('[onclick*=messages]'))">
+                Tümü →
+            </a>
+        </div>
+
+        <div style="overflow-x:auto;">
+            <table class="msg-table">
+                <thead>
+                    <tr>
+                        <th>Gönderen</th>
+                        <th>Konu / Mesaj</th>
+                        <th>Tarih</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (vm.contacts != null && vm.contacts.Any())
+                    {
+                        @foreach (var c in vm.contacts.Take(5))
+                        {
+                            <tr>
+                                <td>
+                                    <strong style="color:var(--light);">@c.FullName</strong><br>
+                                    <small style="color:var(--muted);">@c.Email</small>
+                                </td>
+                                <td>
+                                    <span style="color:var(--light); font-size:.87rem;">@c.Subject</span><br>
+                                    <small style="color:var(--muted);">
+                                        @(c.Message?.Length > 50
+                                            ? c.Message.Substring(0, 50) + "…"
+                                            : c.Message)
+                                    </small>
+                                </td>
+                                <td>
+                                    <small>@c.CreatedAt.ToString("dd MMM yyyy")</small>
+                                </td>
+                                <td>
+                                    <a class="table-action-btn"
+                                       onclick="switchSection('messages', document.querySelector('[onclick*=messages]'))"
+                                       title="Mesajlara git">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" style="text-align:center; color:var(--muted); padding:2rem;">
+                                <i class="bi bi-inbox" style="font-size:1.5rem; display:block; margin-bottom:.5rem;"></i>
+                                Henüz mesaj yok.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>

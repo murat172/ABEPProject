@@ -1,0 +1,49 @@
+@model AdminViewModel
+
+<div class="main-content" id="sec-homepage-kit">
+
+    <div class="section-header">
+        <div>
+            <div class="section-heading">ACİL ÇANTA YÖNETİMİ</div>
+            <div style="font-size:.85rem;color:var(--muted);">Ana sayfadaki çanta listesi ve acil numaralar</div>
+        </div>
+        <div class="d-flex gap-2">
+            <form>
+                <button class="btn-add" type="submit" form="emergencyPageForm">
+                    <i class="bi bi-floppy"></i> Kaydet & Yayınla
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="content-editor-grid">
+
+        <div class="editor-main">
+
+            @* Hatırlatma Kutusu *@
+            @* Bölüm Başlığı  *@
+            @await Html.PartialAsync("~/Views/Admin/Emergency/_EmergencyPage.cshtml", Model.emergencyPage)
+
+            @* Çanta Öğeleri *@
+            @await Html.PartialAsync("~/Views/Admin/Emergency/_EmergencyKit.cshtml", Model.emergencyKitItems)
+
+            @* Acil Numaralar *@
+            @await Html.PartialAsync("~/Views/Admin/Emergency/_EmergencyPhone.cshtml", Model.emergencyPhones)
+
+        </div>
+
+        @* SAĞ: Önizleme *@
+        <div class="editor-sidebar">
+            
+
+            <div class="info-box mt-3">
+                <div class="info-box-head"><i class="bi bi-clock-history me-1"></i> Son Güncelleme</div>
+                <div class="info-box-body">
+                    <div class="info-row"><span>Güncelleyen</span><strong>@Model.emergencyPage?.UpdatedAt</strong></div>
+                    <div class="info-row"><span>Tarih</span><strong>@Model.emergencyPage?.UpdatedBy</strong></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

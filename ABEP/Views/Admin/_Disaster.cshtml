@@ -1,0 +1,535 @@
+@model List<ABEP.Models.DisasterModel>
+
+<style>
+  /* Modal için ek stiller — ana admin sayfasından zaten gelen değişkenler geçerli */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:2000; display:none; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal-box { background:#1c1c1c; border:1px solid rgba(255,255,255,.08); border-radius:6px; width:min(860px,95vw); max-height:90vh; overflow-y:auto; padding:2rem; position:relative; }
+  .modal-box h3 { font-family:'Barlow Condensed',sans-serif; font-size:1.4rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#F5F1EC; margin-bottom:1.5rem; }
+  .modal-close { position:absolute; top:1.2rem; right:1.2rem; background:transparent; border:none; color:#888; font-size:1.3rem; cursor:pointer; transition:color .2s; }
+  .modal-close:hover { color:#E74C3C; }
+
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+  .form-grid .full { grid-column:1/-1; }
+  .form-group label { display:block; font-size:.72rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#888; margin-bottom:.4rem; }
+  .form-group input, .form-group select, .form-group textarea {
+    width:100%; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
+    color:#F5F1EC; font-family:'Barlow',sans-serif; font-size:.88rem;
+    padding:.55rem .9rem; border-radius:3px; outline:none; transition:border-color .2s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:rgba(231,76,60,.5); }
+  .form-group textarea { min-height:90px; resize:vertical; }
+  .form-group select option { background:#1c1c1c; }
+  .form-section-title { font-family:'Barlow Condensed',sans-serif; font-size:.78rem; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#E74C3C; margin:1.5rem 0 .75rem; padding-bottom:.4rem; border-bottom:1px solid rgba(255,255,255,.07); grid-column:1/-1; }
+  .checklist-hint { font-size:.75rem; color:#666; margin-top:.3rem; }
+
+  .btn-save { background:#C0392B; color:#fff; font-family:'Barlow Condensed',sans-serif; font-size:.9rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; border:none; padding:.7rem 2rem; border-radius:3px; cursor:pointer; transition:background .2s; }
+  .btn-save:hover { background:#922B21; }
+  .btn-cancel { background:transparent; color:#888; font-family:'Barlow Condensed',sans-serif; font-size:.9rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; border:1px solid rgba(255,255,255,.1); padding:.7rem 1.5rem; border-radius:3px; cursor:pointer; transition:all .2s; }
+  .btn-cancel:hover { border-color:rgba(255,255,255,.25); color:#F5F1EC; }
+
+  /* Liste */
+  .disaster-list { display:flex; flex-direction:column; gap:.5rem; }
+  .disaster-row { display:flex; align-items:center; gap:1rem; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); border-radius:4px; padding:.85rem 1rem; }
+  .dr-icon { width:38px; height:38px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+  .dr-icon.red    { background:rgba(192,57,43,.2); color:#E74C3C; }
+  .dr-icon.yellow { background:rgba(211,84,0,.2);  color:#E67E22; }
+  .dr-icon.blue   { background:rgba(52,152,219,.2); color:#3498DB; }
+  .dr-icon.green  { background:rgba(39,174,96,.2);  color:#2ECC71; }
+  .dr-info { flex:1; min-width:0; }
+  .dr-name { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:1rem; letter-spacing:.5px; }
+  .dr-meta { font-size:.75rem; color:#666; margin-top:.15rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .dr-actions { display:flex; gap:.4rem; flex-shrink:0; }
+  .table-action-btn { background:transparent; border:1px solid rgba(255,255,255,.08); color:#888; padding:.35rem .55rem; border-radius:3px; font-size:.85rem; cursor:pointer; transition:all .2s; }
+  .table-action-btn:hover { border-color:rgba(231,76,60,.4); color:#E74C3C; }
+  .table-action-btn.danger:hover { border-color:rgba(192,57,43,.6); color:#C0392B; }
+  .risk-pill { font-family:'Barlow Condensed',sans-serif; font-size:.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; padding:.25rem .65rem; border-radius:2px; flex-shrink:0; }
+  .risk-pill.critical { background:rgba(192,57,43,.2); color:#E74C3C; }
+  .risk-pill.high     { background:rgba(211,84,0,.2);  color:#E67E22; }
+  .risk-pill.medium   { background:rgba(241,196,15,.15); color:#F1C40F; }
+  .risk-pill.low      { background:rgba(39,174,96,.15);  color:#2ECC71; }
+  .msg-status { font-size:.72rem; font-weight:700; letter-spacing:1px; padding:.25rem .65rem; border-radius:2px; flex-shrink:0; }
+  .msg-status.read    { background:rgba(39,174,96,.12); color:#2ECC71; }
+  .msg-status.pending { background:rgba(255,255,255,.06); color:#888; }
+  .empty-list { text-align:center; padding:3rem; color:#555; }
+  .empty-list i { font-size:2.5rem; display:block; margin-bottom:.75rem; }
+
+  .filter-row { display:flex; gap:.75rem; margin-bottom:1.25rem; flex-wrap:wrap; }
+  .admin-select { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); color:#F5F1EC; font-family:'Barlow',sans-serif; font-size:.83rem; padding:.45rem .85rem; border-radius:3px; outline:none; cursor:pointer; }
+  .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; }
+  .section-heading { font-family:'Barlow Condensed',sans-serif; font-size:1.1rem; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#F5F1EC; }
+  .btn-add { background:#C0392B; color:#fff; font-family:'Barlow Condensed',sans-serif; font-size:.82rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; border:none; padding:.5rem 1.2rem; border-radius:3px; cursor:pointer; display:flex; align-items:center; gap:.4rem; transition:background .2s; }
+  .btn-add:hover { background:#922B21; }
+</style>
+
+<div class="main-content" id="sec-disasters">
+  <div class="section-header">
+    <div class="section-heading">AFET YÖNETİMİ</div>
+    <div class="d-flex gap-2">
+      <button class="btn-add" onclick="openModal()"><i class="bi bi-plus-lg"></i> Yeni Afet Ekle</button>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <select class="admin-select" id="filterCat" onchange="filterList()">
+      <option value="">Tüm Kategoriler</option>
+      <option value="jeolojik">Jeolojik</option>
+      <option value="hidrolojik">Hidrolojik</option>
+      <option value="meteorolojik">Meteorolojik</option>
+      <option value="yangin">Yangın</option>
+      <option value="teknolojik">Teknolojik</option>
+    </select>
+    <select class="admin-select" id="filterStatus" onchange="filterList()">
+      <option value="">Durum</option>
+      <option value="1">Yayında</option>
+      <option value="0">Taslak</option>
+    </select>
+  </div>
+
+  <div class="disaster-list" id="disasterList">
+    @if (!Model.Any())
+    {
+      <div class="empty-list">
+        <i class="bi bi-database-slash"></i>
+        <p>Henüz afet eklenmedi.</p>
+      </div>
+    }
+    else
+    {
+      @foreach (var d in Model)
+      {
+        string catLabel = d.Category switch {
+          "jeolojik" => "Jeolojik", "hidrolojik" => "Hidrolojik",
+          "meteorolojik" => "Meteorolojik", "yangin" => "Yangın",
+          "teknolojik" => "Teknolojik", _ => d.Category
+        };
+        string riskLabel = d.RiskLevel switch {
+          "critical" => "Kritik", "high" => "Yüksek",
+          "medium" => "Orta", "low" => "Düşük", _ => d.RiskLevel
+        };
+
+        <div class="disaster-row"
+             data-id="@d.Id"
+             data-cat="@d.Category"
+             data-published="@(d.IsPublished ? "1" : "0")">
+          <div class="dr-icon @d.IconColor"><i class="bi @d.Icon"></i></div>
+          <div class="dr-info">
+            <div class="dr-name">@d.Name</div>
+            <div class="dr-meta">
+              @catLabel · @d.ModuleCount modül ·
+              Son güncelleme: @d.UpdatedAt.ToString("dd MMM yyyy") ·
+              @d.ViewCount.ToString("N0") görüntülenme
+            </div>
+          </div>
+          <span class="risk-pill @d.RiskLevel">@riskLabel</span>
+          <span class="msg-status @(d.IsPublished ? "read" : "pending")">@(d.IsPublished ? "Yayında" : "Taslak")</span>
+          <div class="dr-actions">
+            <button class="table-action-btn" title="Düzenle" onclick="editDisaster(@d.Id)">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="table-action-btn danger" title="Sil" onclick="deleteDisaster(@d.Id, this)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>
+@Html.AntiForgeryToken()
+<!-- ── MODAL ── -->
+<div class="modal-overlay" id="disasterModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()"><i class="bi bi-x-lg"></i></button>
+    <h3 id="modalTitle">Yeni Afet Ekle</h3>
+
+    <div class="form-grid" id="disasterForm">
+      <input type="hidden" id="fId" value="0" />
+
+      <!-- Temel Bilgiler -->
+      <div class="form-section-title">Temel Bilgiler</div>
+
+      <div class="form-group">
+        <label>Afet Adı *</label>
+        <input type="text" id="fName" placeholder="DEPREM" />
+      </div>
+      <div class="form-group">
+        <label>Slug (URL) *</label>
+        <input type="text" id="fSlug" placeholder="deprem" />
+      </div>
+
+      <div class="form-group">
+        <label>Kategori</label>
+        <select id="fCategory">
+          <option value="jeolojik">Jeolojik</option>
+          <option value="hidrolojik">Hidrolojik</option>
+          <option value="meteorolojik">Meteorolojik</option>
+          <option value="yangin">Yangın</option>
+          <option value="teknolojik">Teknolojik</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Risk Seviyesi</label>
+        <select id="fRiskLevel">
+          <option value="critical">Kritik</option>
+          <option value="high">Yüksek</option>
+          <option value="medium">Orta</option>
+          <option value="low">Düşük</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Bootstrap İkon (örn: bi-activity)</label>
+        <input type="text" id="fIcon" placeholder="bi-activity" />
+      </div>
+      <div class="form-group">
+        <label>İkon Rengi</label>
+        <select id="fIconColor">
+          <option value="red">Kırmızı</option>
+          <option value="yellow">Sarı</option>
+          <option value="blue">Mavi</option>
+          <option value="green">Yeşil</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Liste Görseli URL</label>
+        <input type="text" id="fImageUrl" placeholder="https://..." />
+      </div>
+      <div class="form-group">
+        <label>Hero Görseli URL (detay sayfası)</label>
+        <input type="text" id="fHeroImageUrl" placeholder="https://..." />
+      </div>
+
+      <div class="form-group">
+        <label>Modül Sayısı</label>
+        <input type="number" id="fModuleCount" value="0" min="0" />
+      </div>
+      <div class="form-group" style="display:flex;align-items:center;gap:1rem;padding-top:1.4rem;">
+        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.82rem;letter-spacing:0;text-transform:none;">
+          <input type="checkbox" id="fIsPublished" /> Yayınla
+        </label>
+        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.82rem;letter-spacing:0;text-transform:none;">
+          <input type="checkbox" id="fIsFeatured" /> Öne Çıkar
+        </label>
+      </div>
+
+      <div class="form-group full">
+        <label>Kısa Açıklama (liste kartı)</label>
+        <textarea id="fShortDescription" rows="2"></textarea>
+      </div>
+
+      <!-- Nedir Bölümü -->
+      <div class="form-section-title">Nedir Bölümü</div>
+
+      <div class="form-group full">
+        <label>Başlık (örn: DEPREM NEDİR?)</label>
+        <input type="text" id="fWhatIsTitle" />
+      </div>
+      <div class="form-group full">
+        <label>Giriş Paragrafı</label>
+        <textarea id="fWhatIsLead"></textarea>
+      </div>
+      <div class="form-group full">
+        <label>Açıklama</label>
+        <textarea id="fWhatIsBody"></textarea>
+      </div>
+      <div class="form-group full">
+        <label>Bilgi Kutusu</label>
+        <textarea id="fWhatIsCallout"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Video URL</label>
+        <input type="text" id="fVideoUrl" />
+      </div>
+      <div class="form-group">
+        <label>Video Küçük Resim URL</label>
+        <input type="text" id="fVideoThumbnailUrl" />
+      </div>
+      <div class="form-group full">
+        <label>Video Başlığı</label>
+        <input type="text" id="fVideoCaption" />
+      </div>
+
+      <!-- Önce Bölümü -->
+      <div class="form-section-title">Önce Bölümü</div>
+      <div class="form-group full">
+        <label>Başlık</label>
+        <input type="text" id="fBeforeTitle" placeholder="DEPREM ÖNCESİNDE" />
+      </div>
+      <div class="form-group full">
+        <label>Giriş Metni</label>
+        <textarea id="fBeforeIntro"></textarea>
+      </div>
+      <div class="form-group full">
+        <label>Kontrol Listesi</label>
+        <textarea id="fBeforeChecklist" rows="4" placeholder='["Madde 1","Madde 2","Madde 3"]'></textarea>
+        <div class="checklist-hint">JSON dizi formatında girin: ["madde 1", "madde 2"]</div>
+      </div>
+
+      <!-- Sırasında Bölümü -->
+      <div class="form-section-title">Sırasında Bölümü</div>
+      <div class="form-group full">
+        <label>Başlık</label>
+        <input type="text" id="fDuringTitle" placeholder="DEPREM SIRASINDA" />
+      </div>
+      <div class="form-group full">
+        <label>Uyarı Kutusu (Asla yapma)</label>
+        <textarea id="fDuringWarning"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Faz 1 Etiket</label>
+        <input type="text" id="fDuringPhase1Label" placeholder="İlk 10 Saniye" />
+      </div>
+      <div class="form-group">
+        <label>Faz 1 Başlık</label>
+        <input type="text" id="fDuringPhase1Title" placeholder="SAKINLEŞIN" />
+      </div>
+      <div class="form-group full">
+        <label>Faz 1 Maddeler</label>
+        <textarea id="fDuringPhase1Items" rows="3" placeholder='["Panik yapmayın","Koşmayın"]'></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Faz 2 Etiket</label>
+        <input type="text" id="fDuringPhase2Label" placeholder="Sallanma Sırasında" />
+      </div>
+      <div class="form-group">
+        <label>Faz 2 Başlık</label>
+        <input type="text" id="fDuringPhase2Title" placeholder="ÇÖK-KAPAN-TUT" />
+      </div>
+      <div class="form-group full">
+        <label>Faz 2 Maddeler</label>
+        <textarea id="fDuringPhase2Items" rows="3" placeholder='["Masa altına girin","Başını koru"]'></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Faz 3 Etiket</label>
+        <input type="text" id="fDuringPhase3Label" placeholder="Sallanma Bittikten Sonra" />
+      </div>
+      <div class="form-group">
+        <label>Faz 3 Başlık</label>
+        <input type="text" id="fDuringPhase3Title" placeholder="KONTROL ET" />
+      </div>
+      <div class="form-group full">
+        <label>Faz 3 Maddeler</label>
+        <textarea id="fDuringPhase3Items" rows="3" placeholder='["Yaralı kontrolü yap","Gaz kokusu varsa tahliye"]'></textarea>
+      </div>
+
+      <div class="form-group full">
+        <label>Ek Paragraf</label>
+        <textarea id="fDuringExtra"></textarea>
+      </div>
+
+      <!-- Sonrasında Bölümü -->
+      <div class="form-section-title">Sonrasında Bölümü</div>
+      <div class="form-group full">
+        <label>Başlık</label>
+        <input type="text" id="fAfterTitle" placeholder="DEPREM SONRASINDA" />
+      </div>
+      <div class="form-group full">
+        <label>Giriş Metni</label>
+        <textarea id="fAfterIntro"></textarea>
+      </div>
+      <div class="form-group full">
+        <label>Kontrol Listesi</label>
+        <textarea id="fAfterChecklist" rows="4" placeholder='["Madde 1","Madde 2"]'></textarea>
+        <div class="checklist-hint">JSON dizi formatında girin: ["madde 1", "madde 2"]</div>
+      </div>
+      <div class="form-group full">
+        <label>Önemli Not Kutusu</label>
+        <textarea id="fAfterCallout"></textarea>
+      </div>
+
+    </div><!-- /form-grid -->
+
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn-save" onclick="saveDisaster()">Kaydet</button>
+      <button class="btn-cancel" onclick="closeModal()">İptal</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Modal ──────────────────────────────────────────────────
+  function openModal() {
+    document.getElementById('disasterModal').classList.add('open');
+}
+
+  function closeModal() {
+    document.getElementById('disasterModal').classList.remove('open');
+  }
+
+  document.getElementById('disasterModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('disasterModal')) closeModal();
+  });
+
+  // Slug otomatik oluştur
+  document.getElementById('fName').addEventListener('input', function() {
+    const slug = document.getElementById('fSlug');
+    if (!slug._edited) {
+      slug.value = this.value.toLowerCase()
+        .replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s')
+        .replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')
+        .replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+    }
+  });
+  document.getElementById('fSlug').addEventListener('input', function() { this._edited = true; });
+
+  function resetForm() {
+    document.getElementById('fId').value = 0;
+    ['fName','fSlug','fCategory','fRiskLevel','fIcon','fIconColor',
+     'fImageUrl','fHeroImageUrl','fModuleCount','fShortDescription',
+     'fWhatIsTitle','fWhatIsLead','fWhatIsBody','fWhatIsCallout',
+     'fVideoUrl','fVideoThumbnailUrl','fVideoCaption',
+     'fBeforeTitle','fBeforeIntro','fBeforeChecklist',
+     'fDuringTitle','fDuringWarning',
+     'fDuringPhase1Label','fDuringPhase1Title','fDuringPhase1Items',
+     'fDuringPhase2Label','fDuringPhase2Title','fDuringPhase2Items',
+     'fDuringPhase3Label','fDuringPhase3Title','fDuringPhase3Items',
+     'fDuringExtra','fAfterTitle','fAfterIntro','fAfterChecklist','fAfterCallout'
+    ].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.value = el.tagName === 'SELECT' ? el.options[0].value : ''; el._edited = false; }
+    });
+    document.getElementById('fIsPublished').checked = false;
+    document.getElementById('fIsFeatured').checked = false;
+    document.getElementById('fModuleCount').value = 0;
+  }
+
+  function fillForm(data) {
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
+    set('fId', data.id);
+    set('fName', data.name);
+    set('fSlug', data.slug);
+    set('fCategory', data.category);
+    set('fRiskLevel', data.riskLevel);
+    set('fIcon', data.icon);
+    set('fIconColor', data.iconColor);
+    set('fImageUrl', data.imageUrl);
+    set('fHeroImageUrl', data.heroImageUrl);
+    set('fModuleCount', data.moduleCount);
+    set('fShortDescription', data.shortDescription);
+    set('fWhatIsTitle', data.whatIsTitle);
+    set('fWhatIsLead', data.whatIsLead);
+    set('fWhatIsBody', data.whatIsBody);
+    set('fWhatIsCallout', data.whatIsCallout);
+    set('fVideoUrl', data.videoUrl);
+    set('fVideoThumbnailUrl', data.videoThumbnailUrl);
+    set('fVideoCaption', data.videoCaption);
+    set('fBeforeTitle', data.beforeTitle);
+    set('fBeforeIntro', data.beforeIntro);
+    set('fBeforeChecklist', data.beforeChecklist);
+    set('fDuringTitle', data.duringTitle);
+    set('fDuringWarning', data.duringWarning);
+    set('fDuringPhase1Label', data.duringPhase1Label);
+    set('fDuringPhase1Title', data.duringPhase1Title);
+    set('fDuringPhase1Items', data.duringPhase1Items);
+    set('fDuringPhase2Label', data.duringPhase2Label);
+    set('fDuringPhase2Title', data.duringPhase2Title);
+    set('fDuringPhase2Items', data.duringPhase2Items);
+    set('fDuringPhase3Label', data.duringPhase3Label);
+    set('fDuringPhase3Title', data.duringPhase3Title);
+    set('fDuringPhase3Items', data.duringPhase3Items);
+    set('fDuringExtra', data.duringExtra);
+    set('fAfterTitle', data.afterTitle);
+    set('fAfterIntro', data.afterIntro);
+    set('fAfterChecklist', data.afterChecklist);
+    set('fAfterCallout', data.afterCallout);
+    document.getElementById('fIsPublished').checked = data.isPublished;
+    document.getElementById('fIsFeatured').checked  = data.isFeatured;
+    document.getElementById('fSlug')._edited = true;
+  }
+
+  function buildPayload() {
+    return {
+      id:                parseInt(document.getElementById('fId').value) || 0,
+      name:              document.getElementById('fName').value,
+      slug:              document.getElementById('fSlug').value,
+      category:          document.getElementById('fCategory').value,
+      riskLevel:         document.getElementById('fRiskLevel').value,
+      icon:              document.getElementById('fIcon').value,
+      iconColor:         document.getElementById('fIconColor').value,
+      imageUrl:          document.getElementById('fImageUrl').value,
+      heroImageUrl:      document.getElementById('fHeroImageUrl').value,
+      moduleCount:       parseInt(document.getElementById('fModuleCount').value) || 0,
+      isPublished:       document.getElementById('fIsPublished').checked,
+      isFeatured:        document.getElementById('fIsFeatured').checked,
+      shortDescription:  document.getElementById('fShortDescription').value,
+      whatIsTitle:       document.getElementById('fWhatIsTitle').value,
+      whatIsLead:        document.getElementById('fWhatIsLead').value,
+      whatIsBody:        document.getElementById('fWhatIsBody').value,
+      whatIsCallout:     document.getElementById('fWhatIsCallout').value,
+      videoUrl:          document.getElementById('fVideoUrl').value,
+      videoThumbnailUrl: document.getElementById('fVideoThumbnailUrl').value,
+      videoCaption:      document.getElementById('fVideoCaption').value,
+      beforeTitle:       document.getElementById('fBeforeTitle').value,
+      beforeIntro:       document.getElementById('fBeforeIntro').value,
+      beforeChecklist:   document.getElementById('fBeforeChecklist').value,
+      duringTitle:       document.getElementById('fDuringTitle').value,
+      duringWarning:     document.getElementById('fDuringWarning').value,
+      duringPhase1Label: document.getElementById('fDuringPhase1Label').value,
+      duringPhase1Title: document.getElementById('fDuringPhase1Title').value,
+      duringPhase1Items: document.getElementById('fDuringPhase1Items').value,
+      duringPhase2Label: document.getElementById('fDuringPhase2Label').value,
+      duringPhase2Title: document.getElementById('fDuringPhase2Title').value,
+      duringPhase2Items: document.getElementById('fDuringPhase2Items').value,
+      duringPhase3Label: document.getElementById('fDuringPhase3Label').value,
+      duringPhase3Title: document.getElementById('fDuringPhase3Title').value,
+      duringPhase3Items: document.getElementById('fDuringPhase3Items').value,
+      duringExtra:       document.getElementById('fDuringExtra').value,
+      afterTitle:        document.getElementById('fAfterTitle').value,
+      afterIntro:        document.getElementById('fAfterIntro').value,
+      afterChecklist:    document.getElementById('fAfterChecklist').value,
+      afterCallout:      document.getElementById('fAfterCallout').value,
+    };
+  }
+
+  // ── CRUD ──────────────────────────────────────────────────
+  async function saveDisaster() {
+    const data = buildPayload();
+    if (!data.name || !data.slug) { alert('Afet Adı ve Slug zorunludur.'); return; }
+
+    const url = data.id === 0 ? '/Disaster/Create' : '/Disaster/Update';
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? ''
+        },
+        body: JSON.stringify(data)
+    });
+
+    if (res.ok) { closeModal(); location.reload(); }
+    else { alert('Hata: ' + res.status + ' ' + res.statusText); }
+}
+
+  async function editDisaster(id) {
+    const res = await fetch('/Disaster/Get?id=' + id);
+    if (!res.ok) { alert('Veri alınamadı.'); return; }
+    const data = await res.json();
+    resetForm();
+    fillForm(data);
+    document.getElementById('modalTitle').textContent = 'Afet Düzenle';
+    document.getElementById('disasterModal').classList.add('open');
+  }
+
+  async function deleteDisaster(id, btn) {
+    if (!confirm('Bu afeti silmek istediğinize emin misiniz?')) return;
+    const res = await fetch('/Disaster/Delete?id=' + id, { method: 'POST' });  // antiforgery gerektiriyorsa header ekleyin
+    if (res.ok) { btn.closest('.disaster-row').remove(); }
+    else        { alert('Silme işlemi başarısız.'); }
+  }
+
+  // ── Filtrele ──────────────────────────────────────────────
+  function filterList() {
+    const cat    = document.getElementById('filterCat').value;
+    const status = document.getElementById('filterStatus').value;
+    document.querySelectorAll('#disasterList .disaster-row').forEach(row => {
+      const matchCat    = !cat    || row.dataset.cat === cat;
+      const matchStatus = !status || row.dataset.published === status;
+      row.style.display = (matchCat && matchStatus) ? '' : 'none';
+    });
+  }
+</script>

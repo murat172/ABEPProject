@@ -1,0 +1,325 @@
+@model AdminViewModel
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Gösterge Paneli";
+}
+
+<!-- ════ MAIN ════ -->
+
+  <!-- ── DASHBOARD ── -->
+  @await Html.PartialAsync(partialViewName: "_Dashboard")
+
+  <!-- ── MESAJLAR ── -->
+  @await Html.PartialAsync("_Messages", Model.contacts)
+
+  @await Html.PartialAsync("_HeroAdmin", Model.hero)
+
+  @await Html.PartialAsync(partialViewName: "_StepsAdmin", Model.howToPrepare)
+
+  @await Html.PartialAsync(partialViewName: "_EmergencyAdmin", Model)
+  
+  <!-- ── AFET YÖNETİMİ ── -->
+  @await Html.PartialAsync("_Disaster", Model.disasters ?? new List<ABEP.Models.DisasterModel>())
+
+  <!-- ── KULLANICI & ROL YÖNETİMİ ── -->
+  @await Html.PartialAsync("~/Views/Admin/_UsersPartial.cshtml")
+
+  <!-- ── AYARLAR ── -->
+  <div class="main-content" id="sec-settings">
+    <div class="section-heading mb-4">AYARLAR</div>
+    <div class="settings-grid">
+      <div>
+        <div class="settings-nav" id="settingsNav">
+          <div class="settings-nav-item active" onclick="switchSettings('general', this)">Genel</div>
+          <div class="settings-nav-item" onclick="switchSettings('notifications', this)">Bildirimler</div>
+          <div class="settings-nav-item" onclick="switchSettings('security', this)">Güvenlik</div>
+          <div class="settings-nav-item" onclick="switchSettings('appearance', this)">Görünüm</div>
+        </div>
+      </div>
+      <div>
+        <div class="settings-section active" id="settings-general">
+          <div class="settings-group">
+            <div class="settings-group-header">Site Bilgileri</div>
+            <div class="settings-group-body">
+              <div class="settings-row">
+                <div><div class="settings-row-label">Site Adı</div></div>
+                <input type="text" class="admin-input" value="AfetBilinç" style="width:200px;" />
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-row-label">Tagline</div></div>
+                <input type="text" class="admin-input" value="Afet Bilinçlendirme Platformu" style="width:200px;" />
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-row-label">İletişim E-postası</div></div>
+                <input type="email" class="admin-input" value="iletisim@afetbilincx.org" style="width:230px;" />
+              </div>
+            </div>
+          </div>
+          <div class="settings-group">
+            <div class="settings-group-header">Acil Uyarı Sistemi</div>
+            <div class="settings-group-body">
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row-label">Otomatik Uyarı Yayını</div>
+                  <div class="settings-row-desc">M4.0+ depremlerde otomatik banner göster</div>
+                </div>
+                <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row-label">SMS Bildirimi</div>
+                  <div class="settings-row-desc">Abone kullanıcılara SMS gönder</div>
+                </div>
+                <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="settings-row">
+                <div>
+                  <div class="settings-row-label">Bakım Modu</div>
+                  <div class="settings-row-desc">Siteyi geçici olarak kapat</div>
+                </div>
+                <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+              </div>
+            </div>
+          </div>
+          <button class="btn-add" onclick="showToast('Ayarlar kaydedildi')"><i class="bi bi-floppy"></i> Kaydet</button>
+        </div>
+        <div class="settings-section" id="settings-notifications">
+          <div class="settings-group">
+            <div class="settings-group-header">Bildirim Tercihleri</div>
+            <div class="settings-group-body">
+              <div class="settings-row">
+                <div><div class="settings-row-label">Yeni Mesaj Bildirimi</div><div class="settings-row-desc">Her yeni mesaj geldiğinde</div></div>
+                <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-row-label">Deprem Uyarısı</div><div class="settings-row-desc">M3.0+ depremlerde</div></div>
+                <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-row-label">Haftalık Rapor</div><div class="settings-row-desc">Her Pazartesi e-posta</div></div>
+                <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+              </div>
+            </div>
+          </div>
+          <button class="btn-add" onclick="showToast('Bildirim ayarları kaydedildi')"><i class="bi bi-floppy"></i> Kaydet</button>
+        </div>
+        <div class="settings-section" id="settings-security">
+          <div class="settings-group">
+            <div class="settings-group-header">Güvenlik</div>
+            <div class="settings-group-body">
+              <div class="settings-row">
+                <div><div class="settings-row-label">İki Faktörlü Doğrulama</div><div class="settings-row-desc">Google Authenticator ile</div></div>
+                <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-row-label">Oturum Süresi</div></div>
+                <select class="admin-select"><option>8 Saat</option><option>24 Saat</option><option>7 Gün</option></select>
+              </div>
+            </div>
+          </div>
+          <button class="btn-add" onclick="showToast('Güvenlik ayarları kaydedildi')"><i class="bi bi-floppy"></i> Kaydet</button>
+        </div>
+        <div class="settings-section" id="settings-appearance">
+          <div class="settings-group">
+            <div class="settings-group-header">Görünüm</div>
+            <div class="settings-group-body">
+              <div class="settings-row">
+                <div><div class="settings-row-label">Acil Uyarı Rengi</div></div>
+                <input type="color" value="#C0392B" style="width:40px;height:32px;border:none;background:none;cursor:pointer;" />
+              </div>
+              <div class="settings-row">
+                <div><div class="settings-row-label">Footer Logosu</div></div>
+                <button class="btn-secondary-admin"><i class="bi bi-upload"></i> Yükle</button>
+              </div>
+            </div>
+          </div>
+          <button class="btn-add" onclick="showToast('Görünüm ayarları kaydedildi')"><i class="bi bi-floppy"></i> Kaydet</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<script>
+  // Progress bar
+  window.addEventListener('scroll', () => {
+    const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+    document.getElementById('progress').style.width = pct + '%';
+  }, { passive: true });
+
+  // Sidebar toggle (mobile)
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+  }
+
+  // Section switching
+  const sectionMeta = {
+    dashboard:  ['Gösterge Paneli', 'Dashboard'],
+    messages:   ['Mesajlar', 'İletişim'],
+    disasters:  ['Afet Yönetimi', 'İçerik'],
+    news:       ['Haberler', 'İçerik'],
+    users:      ['Kullanıcılar', 'Yönetim'],
+    roles:      ['Roller & İzinler', 'Yönetim'],
+    settings:   ['Ayarlar', 'Sistem'],
+    hero:  ['Hero Yönetimi', 'Ana Sayfa'],
+    steps: ['Hazırlık Adımları', 'Ana Sayfa'],
+    kit:   ['Acil Çanta', 'Ana Sayfa'],
+    'homepage-hero':  ['Hero Yönetimi',       'Ana Sayfa'],
+    'homepage-steps': ['Hazırlık Adımları',   'Ana Sayfa'],
+    'homepage-kit':   ['Acil Çanta',          'Ana Sayfa'],
+  };
+
+  function switchSection(id, el) {
+    document.querySelectorAll('.main-content').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById('sec-' + id);
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.nav-item-admin').forEach(n => n.classList.remove('active'));
+    if (el) el.classList.add('active');
+
+    const meta = sectionMeta[id] || [id, ''];
+    document.getElementById('topbarTitle').textContent = meta[0];
+    document.getElementById('topbarSub').textContent   = meta[1];
+
+    // Kullanıcı/rol bölümü açıldığında verileri tazele
+    if (id === 'users')  loadUsers  && loadUsers();
+    if (id === 'roles')  loadAdmins && loadAdmins();
+  }
+
+  // Settings tabs
+  function switchSettings(tab, el) {
+    document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+    document.getElementById('settings-' + tab)?.classList.add('active');
+    document.querySelectorAll('.settings-nav-item').forEach(n => n.classList.remove('active'));
+    if (el) el.classList.add('active');
+  }
+
+  // Toast
+  function showToast(msg, type) {
+    let t = document.getElementById('adminToast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'adminToast';
+      t.style.cssText = 'position:fixed;bottom:2rem;right:2rem;background:#1e2330;color:#e8eaf0;padding:.75rem 1.25rem;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.4);z-index:9999;font-size:.9rem;transition:opacity .3s;border-left:4px solid var(--accent);';
+      document.body.appendChild(t);
+    }
+    t.style.borderLeftColor = type === 'error' ? '#e63946' : '#22c55e';
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(t._to);
+    t._to = setTimeout(() => { t.style.opacity = '0'; }, 3000);
+  }
+
+  // Hero preview binding
+  function bindHeroPreview() {
+    const map = {
+        'hero-line1':   'prev-hero-line1',
+        'hero-line2':   'prev-hero-line2',
+        'hero-line3':   'prev-hero-line3',
+        'hero-desc':    'prev-hero-desc',
+        'hero-btn1-text':'prev-hero-btn1',
+        'hero-btn2-text':'prev-hero-btn2',
+    };
+    Object.entries(map).forEach(([src, dst]) => {
+        const el = document.getElementById(src);
+        const pv = document.getElementById(dst);
+        if (el && pv) {
+            el.addEventListener('input', () => { pv.textContent = el.value; });
+        }
+    });
+  }
+  bindHeroPreview();
+
+  function updateCharCount(el, counterId, max) {
+    const len = el.value.length;
+    const counter = document.getElementById(counterId);
+    if (!counter) return;
+    counter.textContent = len + ' / ' + max;
+    counter.className = 'char-counter' + (len > max ? ' over' : len > max * .85 ? ' warn' : '');
+  }
+  document.querySelectorAll('[oninput*="updateCharCount"]').forEach(el => el.dispatchEvent(new Event('input')));
+
+  function triggerUpload(inputId) { document.getElementById(inputId)?.click(); }
+  function previewImg(input, previewId) {
+    if (!input.files || !input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = e => { const img = document.getElementById(previewId); if (img) img.src = e.target.result; };
+    reader.readAsDataURL(input.files[0]);
+  }
+  function previewImgUrl(url) { const img = document.getElementById('heroImgPreview'); if (img && url) img.src = url; }
+
+  let stepCount = 4;
+  function addStep() {
+    stepCount++;
+    const editor = document.getElementById('stepsEditor');
+    const card = document.createElement('div');
+    card.className = 'step-edit-card';
+    card.innerHTML = `<div class="step-edit-top"><div class="step-edit-num">${String(stepCount).padStart(2,'0')}</div><div class="step-edit-fields"><input type="text" class="admin-field" placeholder="Adım başlığı" /><textarea class="admin-field admin-textarea" rows="2" placeholder="Adım açıklaması"></textarea></div><div class="step-edit-actions"><button class="icon-btn" onclick="moveStep(this,-1)"><i class="bi bi-chevron-up"></i></button><button class="icon-btn" onclick="moveStep(this,1)"><i class="bi bi-chevron-down"></i></button><button class="icon-btn-danger" onclick="removeStep(this)"><i class="bi bi-trash"></i></button></div></div>`;
+    editor.appendChild(card);
+    card.querySelector('input').focus();
+    renumberSteps();
+  }
+  function removeStep(btn) {
+    const cards = document.querySelectorAll('.step-edit-card');
+    if (cards.length <= 1) { showToast('En az bir adım gereklidir'); return; }
+    btn.closest('.step-edit-card').remove();
+    renumberSteps();
+  }
+  function moveStep(btn, dir) {
+    const card = btn.closest('.step-edit-card');
+    const parent = card.parentElement;
+    if (dir === -1 && card.previousElementSibling) parent.insertBefore(card, card.previousElementSibling);
+    else if (dir === 1 && card.nextElementSibling) parent.insertBefore(card.nextElementSibling, card);
+    renumberSteps();
+  }
+  function renumberSteps() {
+    document.querySelectorAll('.step-edit-num').forEach((el, i) => { el.textContent = String(i + 1).padStart(2, '0'); });
+  }
+
+  let kitIconCounter = 8;
+  function addKitRow() {
+    const editor = document.getElementById('kitEditor');
+    const idx = kitIconCounter++;
+    const row = document.createElement('div');
+    row.className = 'kit-edit-row';
+    row.innerHTML = `<div class="kit-drag"><i class="bi bi-grip-vertical"></i></div><div class="kit-icon-wrap"><i class="bi bi-box kit-icon-preview" id="icon-prev-${idx}"></i></div><input type="text" class="admin-field kit-icon-input" placeholder="ikon" value="bi-box" oninput="updateKitIcon(this,${idx})" /><input type="text" class="admin-field kit-label-input" placeholder="Öğe adı" /><button class="icon-btn-danger" onclick="removeKitRow(this)"><i class="bi bi-trash"></i></button>`;
+    editor.appendChild(row);
+    row.querySelector('.kit-label-input').focus();
+  }
+  function removeKitRow(btn) {
+    const rows = document.querySelectorAll('.kit-edit-row');
+    if (rows.length <= 1) { showToast('En az bir öğe gereklidir'); return; }
+    btn.closest('.kit-edit-row').remove();
+  }
+  function updateKitIcon(input, idx) {
+    const icon = document.getElementById('icon-prev-' + idx);
+    if (!icon) return;
+    icon.className = '';
+    input.value.split(' ').forEach(cls => { if (cls) icon.classList.add(cls); });
+    icon.classList.add('kit-icon-preview');
+  }
+
+  function addEnumRow() {
+    const editor = document.getElementById('emergencyNumsEditor');
+    const row = document.createElement('div');
+    row.className = 'enum-row';
+    row.innerHTML = `<div class="kit-drag"><i class="bi bi-grip-vertical"></i></div><input type="text" class="admin-field" placeholder="Etiket" style="flex:1;" /><input type="text" class="admin-field enum-num-input" placeholder="Numara" /><button class="icon-btn-danger" onclick="removeEnumRow(this)"><i class="bi bi-trash"></i></button>`;
+    editor.appendChild(row);
+    row.querySelector('input').focus();
+  }
+  function removeEnumRow(btn) {
+    const rows = document.querySelectorAll('.enum-row');
+    if (rows.length <= 1) { showToast('En az bir numara gereklidir'); return; }
+    btn.closest('.enum-row').remove();
+  }
+
+  function saveSection(section) {
+    const btn = event.currentTarget;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Kaydediliyor...';
+    btn.disabled = true;
+    setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; showToast('Değişiklikler kaydedildi ve yayınlandı!'); }, 1000);
+  }
+  function previewSection(section) { showToast('Önizleme yeni sekmede açılıyor...'); }
+</script>

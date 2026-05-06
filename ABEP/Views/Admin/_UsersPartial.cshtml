@@ -1,0 +1,301 @@
+@* Views/Admin/_UsersPartial.cshtml – v3 (modal fix) *@
+
+@Html.AntiForgeryToken()
+
+<style>
+    #usersTable th:nth-child(1), #usersTable td:nth-child(1) { min-width: 140px; }
+    #usersTable th:nth-child(2), #usersTable td:nth-child(2) { min-width: 180px; }
+    #usersTable th:nth-child(3), #usersTable td:nth-child(3) { min-width:  90px; }
+    #usersTable th:nth-child(4), #usersTable td:nth-child(4) { min-width: 110px; }
+    #usersTable th:nth-child(5), #usersTable td:nth-child(5) { min-width: 100px; white-space:nowrap; }
+
+    #adminsTable th:nth-child(1), #adminsTable td:nth-child(1) { min-width: 140px; }
+    #adminsTable th:nth-child(2), #adminsTable td:nth-child(2) { min-width: 180px; }
+    #adminsTable th:nth-child(3), #adminsTable td:nth-child(3) { min-width: 110px; }
+    #adminsTable th:nth-child(4), #adminsTable td:nth-child(4) { min-width:  80px; white-space:nowrap; }
+
+    /* ── MODAL FIX ── */
+    .modal-backdrop          { z-index: 99998 !important; pointer-events: none !important; }
+    #roleModal               { z-index: 99999 !important; }
+    #roleModal .modal-content {
+        background: #161a22 !important;
+        border: 1px solid #252b36 !important;
+        border-radius: 14px !important;
+        color: #e8eaf0;
+    }
+    #roleModal .modal-header { border-bottom: 1px solid #252b36 !important; }
+    #roleModal .modal-footer { border-top:    1px solid #252b36 !important; gap:.6rem; }
+    #roleModal_select {
+        background: #1e2330; border: 1px solid #252b36; color: #e8eaf0;
+        border-radius: 8px; padding: .55rem .9rem; width: 100%; font-size: .9rem; outline: none;
+    }
+    #roleModal_select:focus { border-color: #e63946; }
+    #roleModal_select option { background: #1e2330; }
+</style>
+
+<div class="main-content" id="sec-users">
+    <div class="section-heading mb-4">KULLANICI YÖNETİMİ</div>
+    <div class="panel">
+        <div class="panel-body">
+            <div style="display:flex;gap:1rem;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;">
+                <input type="text" id="userSearch" class="admin-input"
+                       placeholder="İsim veya e-posta ara…" oninput="filterUsers()"
+                       style="flex:1;min-width:180px;" />
+                <button class="btn-add" onclick="loadUsers()">
+                    <i class="bi bi-arrow-clockwise"></i> Yenile
+                </button>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="admin-table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Ad Soyad</th><th>E-posta</th><th>Rol</th>
+                            <th>Kayıt Tarihi</th><th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersBody">
+                        <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem;">
+                            <i class="bi bi-hourglass-split"></i> Yükleniyor…
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="main-content" id="sec-roles">
+    <div class="section-heading mb-4">ROLLER &amp; İZİNLER</div>
+    <div class="panel mb-4">
+        <div class="panel-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                <div style="font-weight:600;font-size:1rem;">
+                    <i class="bi bi-shield-fill" style="color:var(--yellow);"></i> Admin Kullanıcıları
+                </div>
+                <button class="btn-add" onclick="loadAdmins()">
+                    <i class="bi bi-arrow-clockwise"></i> Yenile
+                </button>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="admin-table" id="adminsTable">
+                    <thead>
+                        <tr><th>Ad Soyad</th><th>E-posta</th><th>Kayıt Tarihi</th><th>İşlem</th></tr>
+                    </thead>
+                    <tbody id="adminsBody">
+                        <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:2rem;">
+                            <i class="bi bi-hourglass-split"></i> Yükleniyor…
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="panel-body">
+            <div style="font-weight:600;font-size:1rem;margin-bottom:1rem;">
+                <i class="bi bi-info-circle" style="color:var(--accent);"></i> Rol Tanımları
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;">
+                <div style="background:var(--surface2,#1e2330);border-radius:10px;padding:1.25rem;">
+                    <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;">
+                        <i class="bi bi-shield-fill" style="color:#f4c842;font-size:1.2rem;"></i>
+                        <span style="font-weight:700;">Admin</span>
+                    </div>
+                    <p style="color:var(--muted);font-size:.83rem;line-height:1.5;margin:0;">
+                        Admin paneline tam erişim. İçerik, kullanıcı ve sistem ayarlarını yönetebilir.
+                    </p>
+                </div>
+                <div style="background:var(--surface2,#1e2330);border-radius:10px;padding:1.25rem;">
+                    <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;">
+                        <i class="bi bi-person-fill" style="color:#5b9bd5;font-size:1.2rem;"></i>
+                        <span style="font-weight:700;">User</span>
+                    </div>
+                    <p style="color:var(--muted);font-size:.83rem;line-height:1.5;margin:0;">
+                        Standart üye. Admin paneline erişimi yoktur.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ROL DEĞİŞTİR MODAL -->
+<div class="modal fade" id="roleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-shield-fill" style="color:#f4c842;margin-right:.4rem;"></i> Rol Değiştir
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p style="color:#6b7280;font-size:.88rem;margin-bottom:1rem;">
+                    <strong id="roleModal_name" style="color:#e8eaf0;"></strong> kullanıcısının rolünü değiştiriyorsunuz.
+                </p>
+                <input type="hidden" id="roleModal_userId" />
+                <label style="color:#6b7280;font-size:.82rem;display:block;margin-bottom:.4rem;">Yeni Rol</label>
+                <select id="roleModal_select">
+                    <option value="User">👤 User</option>
+                    <option value="Admin">🛡️ Admin</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary-admin" data-bs-dismiss="modal">İptal</button>
+                <button class="btn-add" id="roleModal_saveBtn" onclick="submitRoleChange()">
+                    <i class="bi bi-check-lg"></i> Kaydet
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let _users = [];
+
+    // Modal instance — backdrop:true (static değil!) ekran kararmaya devam etmez
+    // backdrop'u tamamen kapat
+function getRoleModal() {
+    return bootstrap.Modal.getOrCreateInstance(
+        document.getElementById('roleModal'),
+        { backdrop: false, keyboard: true }
+    );
+}
+
+    async function loadUsers() {
+        try {
+            const res = await fetch('/Admin/GetUsers');
+            _users = await res.json();
+            renderUsers(_users);
+        } catch {
+            document.getElementById('usersBody').innerHTML =
+                '<tr><td colspan="5" style="text-align:center;color:#ff8a8a;padding:1.5rem;">Yüklenemedi.</td></tr>';
+        }
+    }
+
+    async function loadAdmins() {
+        try {
+            const res = await fetch('/Admin/GetAdmins');
+            renderAdmins(await res.json());
+        } catch {
+            document.getElementById('adminsBody').innerHTML =
+                '<tr><td colspan="4" style="text-align:center;color:#ff8a8a;padding:1.5rem;">Yüklenemedi.</td></tr>';
+        }
+    }
+
+    function renderUsers(list) {
+        const tbody = document.getElementById('usersBody');
+        if (!list.length) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:2rem;">Kullanıcı bulunamadı.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = list.map(u => `
+            <tr>
+                <td style="font-weight:500;">${esc(u.fullName)}</td>
+                <td style="color:var(--muted);font-size:.88rem;">${esc(u.email)}</td>
+                <td>${roleBadge(u.role)}</td>
+                <td style="color:var(--muted);font-size:.85rem;">${esc(u.date)}</td>
+                <td>
+                    <div style="display:flex;gap:.4rem;">
+                        <button class="icon-btn" title="Rol değiştir"
+                                onclick="openRoleModal('${esc(u.id)}','${esc(u.fullName)}','${esc(u.role)}')">
+                            <i class="bi bi-shield-lock"></i>
+                        </button>
+                        <button class="icon-btn-danger" title="Sil"
+                                onclick="deleteUser('${esc(u.id)}','${esc(u.fullName)}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>`).join('');
+    }
+
+    function renderAdmins(list) {
+        const tbody = document.getElementById('adminsBody');
+        if (!list.length) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:2rem;">Admin kullanıcı yok.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = list.map(u => `
+            <tr>
+                <td style="font-weight:500;">${esc(u.fullName)}</td>
+                <td style="color:var(--muted);font-size:.88rem;">${esc(u.email)}</td>
+                <td style="color:var(--muted);font-size:.85rem;">${esc(u.date)}</td>
+                <td>
+                    <button class="icon-btn" title="Rol değiştir"
+                            onclick="openRoleModal('${esc(u.id)}','${esc(u.fullName)}','Admin')">
+                        <i class="bi bi-shield-lock"></i>
+                    </button>
+                </td>
+            </tr>`).join('');
+    }
+
+    function roleBadge(role) {
+        if (role === 'Admin')
+            return '<span style="background:rgba(244,200,66,.12);color:#f4c842;padding:.2rem .65rem;border-radius:20px;font-size:.78rem;font-weight:600;white-space:nowrap;"><i class="bi bi-shield-fill"></i> Admin</span>';
+        return '<span style="background:rgba(91,155,213,.12);color:#5b9bd5;padding:.2rem .65rem;border-radius:20px;font-size:.78rem;font-weight:600;white-space:nowrap;"><i class="bi bi-person-fill"></i> User</span>';
+    }
+
+    // Tek tırnak (') ve diğer özel karakterleri HTML attribute'ta güvenli hale getirir
+    function esc(s) {
+        return String(s ?? '')
+            .replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;')
+            .replace(/'/g,'&#39;');
+    }
+
+    function filterUsers() {
+        const q = document.getElementById('userSearch').value.toLowerCase();
+        renderUsers(_users.filter(u =>
+            u.fullName.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)));
+    }
+
+    function openRoleModal(id, name, currentRole) {
+        document.getElementById('roleModal_userId').value     = id;
+        document.getElementById('roleModal_name').textContent = name;
+        document.getElementById('roleModal_select').value     = currentRole;
+        getRoleModal().show();
+    }
+
+    async function submitRoleChange() {
+        const fd = new FormData();
+        fd.append('userId',  document.getElementById('roleModal_userId').value);
+        fd.append('newRole', document.getElementById('roleModal_select').value);
+        fd.append('__RequestVerificationToken', getToken());
+        try {
+            const data = await (await fetch('/Admin/ChangeRole', { method:'POST', body:fd })).json();
+            getRoleModal().hide();
+            showToast(data.message ?? (data.success ? 'Rol güncellendi.' : 'Hata.'), data.success ? 'ok' : 'error');
+            if (data.success) { loadUsers(); loadAdmins(); }
+        } catch {
+            showToast('Sunucu hatası.', 'error');
+        }
+    }
+
+    async function deleteUser(id, name) {
+        if (!confirm(`"${name}" kullanıcısını silmek istediğinizden emin misiniz?`)) return;
+        const fd = new FormData();
+        fd.append('userId', id);
+        fd.append('__RequestVerificationToken', getToken());
+        try {
+            const data = await (await fetch('/Admin/DeleteUser', { method:'POST', body:fd })).json();
+            showToast(data.success ? 'Kullanıcı silindi.' : (data.message ?? 'Hata.'), data.success ? 'ok' : 'error');
+            if (data.success) { loadUsers(); loadAdmins(); }
+        } catch {
+            showToast('Sunucu hatası.', 'error');
+        }
+    }
+
+    function getToken() {
+        return document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+    }
+
+    // DOMContentLoaded kullanmıyoruz — partial view'da çalışmaz.
+    // IIFE ile script DOM'a eklenir eklenmez çalışır.
+    (function () {
+        loadUsers();
+        loadAdmins();
+    })();
+</script>

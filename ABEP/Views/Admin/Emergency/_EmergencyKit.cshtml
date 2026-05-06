@@ -1,0 +1,48 @@
+@model List<EmergencyKitItemModel>
+
+<div class="field-group">
+    <div class="field-group-header">
+        <i class="bi bi-bag-fill"></i> Çanta Öğeleri
+    </div>
+    <div class="field-group-body">
+
+        <form asp-controller="Emergency" asp-action="EmergencyKitSave" class="kit-add-row mb-3">
+            <input type="text" name="Icon" class="admin-field mb-2" placeholder="ikon (bi-droplet-fill)" />
+            <input type="text" name="Item" class="admin-field mb-2" placeholder="Öğe adı" />
+            <button type="submit" class="btn-add">
+                <i class="bi bi-plus-lg"></i> Ekle
+            </button>
+        </form>
+
+        <div class="kit-editor" id="kitEditor">
+            @foreach (var kitItem in Model)
+            {
+                <div class="kit-edit-row">
+                    <div class="kit-drag"><i class="bi bi-grip-vertical"></i></div>
+                    <div class="kit-icon-wrap">
+                        <i class="bi @kitItem.Icon kit-icon-preview"></i>
+                    </div>
+
+                    <form asp-controller="Emergency" asp-action="EmergencyKitUpdate"
+                          id="kitForm-@kitItem.Id" style="display:contents;">
+                        <input type="hidden" name="Id" value="@kitItem.Id" />
+                        <input type="text" name="Icon" class="admin-field kit-icon-input"
+                               value="@kitItem.Icon" placeholder="ikon" />
+                        <input type="text" name="Item" class="admin-field kit-label-input"
+                               value="@kitItem.Item" placeholder="Öğe adı" />
+                        <button type="submit" class="icon-btn">
+                            <i class="bi bi-floppy"></i>
+                        </button>
+                    </form>
+
+                    <form asp-controller="Emergency" asp-action="EmergencyKitDelete">
+                        <input type="hidden" name="id" value="@kitItem.Id" />
+                        <button type="submit" class="icon-btn-danger">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            }
+        </div>
+    </div>
+</div>

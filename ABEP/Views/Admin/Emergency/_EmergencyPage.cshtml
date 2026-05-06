@@ -1,0 +1,43 @@
+@model EmergencyModel
+<form asp-controller="Emergency" asp-action="EmergencyPageSave" id="emergencyPageForm">
+
+<div class="field-group">
+                <div class="field-group-header">
+                    <i class="bi bi-type-h2"></i> Bölüm Başlığı
+                </div>
+                <div class="field-group-body">
+                    <div class="two-col-fields">
+                        <div>
+                            <div class="sublabel">Üst Etiket</div>
+                            <input asp-for="Eyebrow" type="text" class="admin-field" />
+                        </div>
+                        <div>
+                            <div class="sublabel">Ana Başlık</div>
+                            <input asp-for="Title1" type="text" class="admin-field" />
+                        </div>
+                        <div class="col-span-2">
+                            <div class="sublabel">Açıklama Metni</div>
+                            <textarea class="admin-field admin-textarea" rows="2" asp-for="Description1"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field-group">
+                <div class="field-group-header">
+                    <i class="bi bi-bell-fill"></i> Hatırlatma Kutusu
+                    <span class="field-hint">Liste altındaki kırmızı callout</span>
+                </div>
+                <div class="field-group-body">
+                    <div class="two-col-fields">
+                        <div>
+                            <div class="sublabel">Başlık</div>
+                            <input type="text" class="admin-field" asp-for="Title2" />
+                        </div>
+                        <div class="col-span-2">
+                            <div class="sublabel">Açıklama</div>
+                            <textarea class="admin-field admin-textarea" rows="2" asp-for="Description2"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </form>
