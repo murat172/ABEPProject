@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "An8CvC4/9pI=",
+  "dgSpecHash": "zMsTx4VDkHU=",
   "success": true,
-  "projectFilePath": "C:\\Users\\h\\OneDrive\\Masaüstü\\ABEP\\ABEP.csproj",
+  "projectFilePath": "C:\\Users\\h\\OneDrive\\Dokumente\\GitHub\\ABEP\\ABEP\\ABEP.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\h\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\h\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",
