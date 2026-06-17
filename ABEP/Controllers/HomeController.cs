@@ -17,8 +17,6 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        // UserManager'ı DI container'dan action içinde çekiyoruz.
-        // Böylece constructor çakışması yaşanmaz.
         var userManager = HttpContext.RequestServices
                               .GetRequiredService<UserManager<ApplicationUser>>();
 
@@ -42,10 +40,10 @@ public class HomeController : Controller
             Eyebrow = "", Title1 = "", Description1 = "", Title2 = "", Description2 = ""
         };
 
-        // ── Hero istatistikleri ──────────────────────────────────────────────
+        // ── Hero istatistikleri ──
         var userCount         = await userManager.Users.CountAsync();
         var disasterCount     = await _context.Disasters.CountAsync();
-        const int catCount    = 5; // Afet kategorisi sabit
+        const int catCount    = 5; 
 
         ViewData["Hero"]              = hero;
         ViewData["HowToPrepare"]      = howToPrepare;

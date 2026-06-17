@@ -14,7 +14,7 @@ namespace ABEP.Controllers
             _context = context;
         }
 
-        // ── Afet Türleri Listesi ────────────────────────────────────
+        // ── Afet Türleri Listesi ───
         public async Task<IActionResult> Index()
         {
             var all = await _context.Disasters
@@ -32,7 +32,6 @@ namespace ABEP.Controllers
             return View(vm);
         }
 
-        // ── Afet Detay Sayfası ──────────────────────────────────────
         public async Task<IActionResult> Details(string slug)
         {
             if (string.IsNullOrWhiteSpace(slug))
@@ -44,11 +43,9 @@ namespace ABEP.Controllers
             if (disaster == null)
                 return NotFound();
 
-            // Görüntülenme sayısını artır
             disaster.ViewCount++;
             await _context.SaveChangesAsync();
 
-            // Aynı kategoriden ilgili afetler (en fazla 3, kendisi hariç)
             var related = await _context.Disasters
                 .Where(d => d.IsPublished && d.Category == disaster.Category && d.Id != disaster.Id)
                 .Take(3)
@@ -63,9 +60,6 @@ namespace ABEP.Controllers
             return View(vm);
         }
 
-        // ────────────────────────────────────────────────────────────
-        // ADMIN CRUD — Admin panelinden çağrılır
-        // ────────────────────────────────────────────────────────────
 
         [HttpPost]
         [IgnoreAntiforgeryToken]
@@ -164,7 +158,6 @@ namespace ABEP.Controllers
             return Ok(new { isPublished = disaster.IsPublished });
         }
 
-        // Admin paneli için tüm afetleri JSON döner
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -180,7 +173,6 @@ namespace ABEP.Controllers
             return Json(list);
         }
 
-        // Düzenleme modalı için tek afet JSON döner
         [HttpGet]
         public async Task<IActionResult> Get(int id)
         {

@@ -8,7 +8,7 @@
     var disasterCount = (int)(ViewData["StatDisasterCount"] ?? 0);
     var catCount      = (int)(ViewData["StatCategoryCount"] ?? 5);
 
-    // Kullanıcı sayısını okunabilir formata çevir (ör. 850000 → "850K+")
+    
     string FormatCount(int n)
     {
         if (n >= 1_000_000) return $"{n / 1_000_000}M+";

@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 namespace ABEP.Controllers.Admin
 {
 
-    
 
     public class HeroController : Controller
     {

@@ -226,13 +226,7 @@
             </div>
           }
 
-          @* ── VIDEO BLOĞU (DÜZELTİLDİ) ──────────────────────────────────────
-             Eski kod: Sadece VideoThumbnailUrl varsa gösteriyordu ve onclick
-             attribute'u Razor string interpolasyonuyla enjekte ediliyordu —
-             bu tırnak çakışmalarına yol açıyordu.
-             Yeni kod: VideoUrl VEYA VideoThumbnailUrl yeterliyse bloğu göster.
-             onclick yerine data-video-url attribute + addEventListener kullan.
-          *@
+          
           @if (hasVideo)
           {
             <div id="videoBox"

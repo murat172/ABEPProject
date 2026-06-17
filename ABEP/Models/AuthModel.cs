@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ABEP.Models
 {
-    // ── Kayıt ViewModel ──────────────────────────────────────────────────────
     public class RegisterViewModel
     {
         [Required(ErrorMessage = "Ad Soyad zorunludur.")]
@@ -27,7 +26,6 @@ namespace ABEP.Models
         public string ConfirmPassword { get; set; } = string.Empty;
     }
 
-    // ── Giriş ViewModel ──────────────────────────────────────────────────────
     public class LoginViewModel
     {
         [Required(ErrorMessage = "E-posta zorunludur.")]
@@ -44,7 +42,6 @@ namespace ABEP.Models
         public bool RememberMe { get; set; }
     }
 
-    // ── Kullanıcı listesi için ViewModel ─────────────────────────────────────
     public class UserListItemViewModel
     {
         public string Id { get; set; } = string.Empty;

@@ -18,7 +18,7 @@ namespace ABEP.Controllers
             _signInManager = signInManager;
         }
 
-        // ── KAYIT ────────────────────────────────────────────────────────────
+        // ── KAYIT ──
         [HttpGet]
         public IActionResult Register() => View();
 
@@ -40,7 +40,7 @@ namespace ABEP.Controllers
 
             if (result.Succeeded)
             {
-                // Yeni kayıtlı her kullanıcıya "User" rolü ata
+
                 await _userManager.AddToRoleAsync(user, "User");
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return RedirectToAction("Index", "Home");
@@ -52,7 +52,7 @@ namespace ABEP.Controllers
             return View(model);
         }
 
-        // ── GİRİŞ ────────────────────────────────────────────────────────────
+        // ── GİRİŞ ──
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
@@ -80,7 +80,7 @@ namespace ABEP.Controllers
             return View(model);
         }
 
-        // ── ÇIKIŞ ────────────────────────────────────────────────────────────
+        // ── ÇIKIŞ ──
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -89,7 +89,7 @@ namespace ABEP.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // ── ERİŞİM REDDİ ─────────────────────────────────────────────────────
+        // ── ERİŞİM REDDİ ──
         public IActionResult AccessDenied() => View();
 
         [Authorize]

@@ -26,7 +26,6 @@ namespace ABEP.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // ── Temel içerikler (mevcut) ──────────────────────────────────────────
             var hero = await _context.Heroes.FirstOrDefaultAsync() ?? new HeroModel
             {
                 Eyebrow = "", TitleLine1 = "", TitleLine2 = "", TitleLine3 = "",
@@ -51,15 +50,13 @@ namespace ABEP.Controllers
                 UpdatedAt = DateTime.Now, UpdatedBy = "Admin"
             };
 
-            // ── Dashboard İstatistikleri ──────────────────────────────────────────
+            // ── Dashboard İstatistikleri ──
             var totalUsers       = await _userManager.Users.CountAsync();
             var totalExperiences = await _context.Experiences.CountAsync();
             var newMessages      = await _context.Contacts.CountAsync();
 
-            // Yayındaki içerik: Hero + HowToPrepare (yayında olanlar) + Disaster sayısı
             var publishedContent = await _context.Disasters.CountAsync();
 
-            // ── ViewModel ─────────────────────────────────────────────────────────
             var vm = new AdminViewModel
             {
                 hero             = hero,
@@ -85,7 +82,6 @@ namespace ABEP.Controllers
         }
 
         
-        // ── KULLANICI LİSTESİ (JSON) ──────────────────────────────────────────
         [HttpGet]
         public async Task<IActionResult> GetUsers()
         {
@@ -107,7 +103,7 @@ namespace ABEP.Controllers
             return Json(list);
         }
  
-        // ── KULLANICI ROLÜNÜ DEĞİŞTİR ─────────────────────────────────────────
+        // ── KULLANICI ROLÜNÜ DEĞİŞTİR ──
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangeRole(string userId, string newRole)
@@ -115,21 +111,18 @@ namespace ABEP.Controllers
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return Json(new { success = false, message = "Kullanıcı bulunamadı." });
  
-            // Rolün varlığını kontrol et
+            
             if (!await _roleManager.RoleExistsAsync(newRole))
                 return Json(new { success = false, message = "Rol mevcut değil." });
  
-            // Mevcut tüm rollerden çıkar
             var currentRoles = await _userManager.GetRolesAsync(user);
             await _userManager.RemoveFromRolesAsync(user, currentRoles);
  
-            // Yeni rol ata
             await _userManager.AddToRoleAsync(user, newRole);
  
             return Json(new { success = true, message = $"Rol '{newRole}' olarak güncellendi." });
         }
  
-        // ── KULLANICI SİL ─────────────────────────────────────────────────────
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteUser(string userId)
@@ -146,7 +139,7 @@ namespace ABEP.Controllers
             return Json(new { success = true });
         }
  
-        // ── ADMİN KULLANICI LİSTESİ (JSON) ───────────────────────────────────
+        // ── ADMİN KULLANICI LİSTESİ (JSON) ──
         [HttpGet]
         public async Task<IActionResult> GetAdmins()
         {

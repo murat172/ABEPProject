@@ -21,7 +21,7 @@ namespace ABEP.Controllers
         }
 
         [HttpPost]
-        [Authorize]  // ← Kayıtlı kullanıcı zorunlu
+        [Authorize]  
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Experiences(ExperiencesModel model)
         {
